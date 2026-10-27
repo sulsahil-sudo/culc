@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>حاسبة فاتورة الكهرباء</title>
+
+<style>
+body{
+    font-family:Tahoma,Arial;
+    background:#f4f7fb;
+    padding:20px;
+}
+.card{
+    max-width:650px;
+    margin:auto;
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 3px 15px rgba(0,0,0,.1);
+}
+h2{
+    text-align:center;
+    color:#0f766e;
+}
+label{
+    display:block;
+    margin-top:15px;
+    font-weight:bold;
+}
+input,select,button{
+    width:100%;
+    padding:12px;
+    margin-top:5px;
+    border:1px solid #ccc;
+    border-radius:8px;
+}
+button{
+    background:#0f766e;
+    color:white;
+    border:none;
+    cursor:pointer;
+    margin-top:20px;
+    font-size:16px;
+}
+button:hover{
+    background:#115e59;
+}
+.result{
+    margin-top:20px;
+    padding:15px;
+    background:#f8fafc;
+    border-radius:10px;
+}
+.chart{
+    display:flex;
+    align-items:flex-end;
+    gap:20px;
+    height:220px;
+    margin-top:20px;
+}
+.bar-wrap{
+    flex:1;
+    text-align:center;
+}
+.bar{
+    width:100%;
+    border-radius:10px 10px 0 0;
+    color:white;
+    font-weight:bold;
+}
+.old{
+    background:#3b82f6;
+}
+.new{
+    background:#10b981;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>⚡ حاسبة فاتورة الكهرباء 2027</h2>
+
+<label>الاستهلاك الشهري (ك.و.س)</label>
+<input type="number" id="usage" placeholder="مثال: 3500">
+
+<label>سعة القاطع</label>
+<select id="breaker">
+  <option value="70">20 - أقل من 100 أمبير (70 ريال)</option>
+  <option value="80">100 - أقل من 200 أمبير (80 ريال)</option>
+  <option value="90">200 - أقل من 300 أمبير (90 ريال)</option>
+  <option value="100">300 أمبير فأكثر (100 ريال)</option>
+</select>
+
+<label>فاتورتك الحالية (اختياري للمقارنة)</label>
+<input type="number" id="oldBill" placeholder="مثال: 1000">
+
+<button onclick="calculate()">احسب</button>
+
+<div id="result" class="result">
+أدخل البيانات ثم اضغط احسب.
+</div>
+
+<div id="chart" class="chart" style="display:none">
+    <div class="bar-wrap">
+        <div id="oldBar" class="bar old"></div>
+        <div>الحالية</div>
+    </div>
+
+    <div class="bar-wrap">
+        <div id="newBar" class="bar new"></div>
+        <div>الجديدة</div>
+    </div>
+</div>
+
+</div>
+
+<script>
+
+function calculate() {
+
+    let usage = Number(document.getElementById("usage").value);
+    let fixed = Number(document.getElementById("breaker").value);
+    let oldBill = Number(document.getElementById("oldBill").value);
+
+    if(!usage || usage <= 0){
+        alert("أدخل الاستهلاك بالكيلوواط");
+        return;
+    }
+
+    let tier1 = Math.min(usage,6000);
+    let tier2 = Math.max(usage-6000,0);
+
+    let energyCost =
+        (tier1 * 0.21) +
+        (tier2 * 0.33);
+
+    let subtotal = energyCost + fixed;
+    let vat = subtotal * 0.15;
+    let newBill = subtotal + vat;
+
+    let html = `
+    <b>رسوم الاستهلاك:</b> ${energyCost.toFixed(2)} ريال<br>
+    <b>الرسوم الثابتة:</b> ${fixed.toFixed(2)} ريال<br>
+    <b>ضريبة القيمة المضافة:</b> ${vat.toFixed(2)} ريال<br><br>
+    <b style="color:green">الفاتورة الجديدة: ${newBill.toFixed(2)} ريال</b>
+    `;
+
+    if(oldBill > 0){
+
+        let diff = newBill - oldBill;
+        let pct = (diff / oldBill) * 100;
+
+        html += `
+        <hr>
+        <b>الفاتورة الحالية:</b> ${oldBill.toFixed(2)} ريال<br>
+        <b>الفرق:</b> ${diff.toFixed(2)} ريال<br>
+        <b>نسبة التغير:</b> ${pct.toFixed(2)}%
+        `;
+
+        drawChart(oldBill,newBill);
+    }
+
+    document.getElementById("result").innerHTML = html;
+}
+
+function drawChart(oldBill,newBill){
+
+    document.getElementById("chart").style.display="flex";
+
+    let max = Math.max(oldBill,newBill);
+
+    let oldHeight = (oldBill/max)*180;
+    let newHeight = (newBill/max)*180;
+
+    let oldBar = document.getElementById("oldBar");
+    let newBar = document.getElementById("newBar");
+
+    oldBar.style.height = oldHeight + "px";
+    newBar.style.height = newHeight + "px";
+
+    oldBar.textContent = oldBill.toFixed(0);
+    newBar.textContent = newBill.toFixed(0);
+}
+
+</script>
+
+</body>
+</html>
