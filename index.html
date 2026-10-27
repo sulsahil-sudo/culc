@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>حاسبة فاتورة الكهرباء</title>
+<title>حاسبة الكهرباء والماء 2027</title>
 
 <style>
 body{
@@ -34,6 +34,7 @@ input,select,button{
     margin-top:5px;
     border:1px solid #ccc;
     border-radius:8px;
+    box-sizing: border-box;
 }
 button{
     background:#0f766e;
@@ -69,12 +70,9 @@ button:hover{
     color:white;
     font-weight:bold;
 }
-.old{
-    background:#3b82f6;
-}
-.new{
-    background:#10b981;
-}
+.old{ background:#3b82f6; }
+.new{ background:#10b981; }
+hr { margin: 15px 0; border: 0; border-top: 1px solid #ccc; }
 </style>
 </head>
 
@@ -82,9 +80,9 @@ button:hover{
 
 <div class="card">
 
-<h2>⚡ حاسبة فاتورة الكهرباء 2027</h2>
+<h2>⚡️💧 حاسبة فاتورة الكهرباء والماء 2027</h2>
 
-<label>الاستهلاك الشهري (ك.و.س)</label>
+<label>الاستهلاك الشهري للكهرباء (ك.و.س)</label>
 <input type="number" id="usage" placeholder="مثال: 3500">
 
 <label>سعة القاطع</label>
@@ -95,7 +93,14 @@ button:hover{
   <option value="100">300 أمبير فأكثر (100 ريال)</option>
 </select>
 
-<label>فاتورتك مبلغ فاتورة الشهر الماضي (اختياري للمقارنة)</label>
+<hr>
+
+<label>الاستهلاك الشهري للماء (متر مكعب)</label>
+<input type="number" id="waterUsage" placeholder="مثال: 15">
+
+<hr>
+
+<label>مبلغ فاتورة الشهر الماضي (اختياري للمقارنة)</label>
 <input type="number" id="oldBill" placeholder="مثال: 1000">
 
 <button onclick="calculate()">احسب</button>
@@ -107,7 +112,7 @@ button:hover{
 <div id="chart" class="chart" style="display:none">
     <div class="bar-wrap">
         <div id="oldBar" class="bar old"></div>
-        <div>مبلغ فاتورة الشهر الماضي</div>
+        <div>السابقة</div>
     </div>
 
     <div class="bar-wrap">
@@ -122,41 +127,46 @@ button:hover{
 
 function calculate() {
 
+    // الكهرباء
     let usage = Number(document.getElementById("usage").value);
     let fixed = Number(document.getElementById("breaker").value);
     let oldBill = Number(document.getElementById("oldBill").value);
 
     if(!usage || usage <= 0){
-        alert("أدخل الاستهلاك بالكيلوواط");
+        alert("أدخل استهلاك الكهرباء بالكيلوواط");
         return;
     }
 
     let tier1 = Math.min(usage,6000);
     let tier2 = Math.max(usage-6000,0);
+    let energyCost = (tier1 * 0.21) + (tier2 * 0.33);
 
-    let energyCost =
-        (tier1 * 0.21) +
-        (tier2 * 0.33);
-
-    let subtotal = energyCost + fixed;
+    // الماء (تعريفة تقديرية سكنية: 0.15 ريال للمتر المكعب حتى 50، و 0.30 لما فوق 50)
+    let waterUsage = Number(document.getElementById("waterUsage").value) || 0;
+    let waterTier1 = Math.min(waterUsage, 50);
+    let waterTier2 = Math.max(waterUsage - 50, 0);
+    let waterCost = (waterTier1 * 0.15) + (waterTier2 * 0.30);
+    
+    // إجمالي الخدمات
+    let subtotal = energyCost + fixed + waterCost;
     let vat = subtotal * 0.15;
     let newBill = subtotal + vat;
 
     let html = `
-    <b>رسوم الاستهلاك:</b> ${energyCost.toFixed(2)} ريال<br>
-    <b>الرسوم الثابتة:</b> ${fixed.toFixed(2)} ريال<br>
-    <b>ضريبة القيمة المضافة:</b> ${vat.toFixed(2)} ريال<br><br>
-    <b style="color:green">الفاتورة الجديدة: ${newBill.toFixed(2)} ريال</b>
+    <b>رسوم الكهرباء:</b> ${energyCost.toFixed(2)} ريال<br>
+    <b>الرسوم الثابتة للكهرباء:</b> ${fixed.toFixed(2)} ريال<br>
+    <b>رسوم المياه:</b> ${waterCost.toFixed(2)} ريال<br>
+    <b>ضريبة القيمة المضافة (15%):</b> ${vat.toFixed(2)} ريال<br><br>
+    <b style="color:green; font-size:18px;">إجمالي الفاتورة (كهرباء + ماء): ${newBill.toFixed(2)} ريال</b>
     `;
 
     if(oldBill > 0){
-
         let diff = newBill - oldBill;
         let pct = (diff / oldBill) * 100;
 
         html += `
         <hr>
-        <b>الفاتورة مبلغ فاتورة الشهر الماضي:</b> ${oldBill.toFixed(2)} ريال<br>
+        <b>فاتورة الشهر الماضي:</b> ${oldBill.toFixed(2)} ريال<br>
         <b>الفرق:</b> ${diff.toFixed(2)} ريال<br>
         <b>نسبة التغير:</b> ${pct.toFixed(2)}%
         `;
@@ -168,11 +178,8 @@ function calculate() {
 }
 
 function drawChart(oldBill,newBill){
-
     document.getElementById("chart").style.display="flex";
-
     let max = Math.max(oldBill,newBill);
-
     let oldHeight = (oldBill/max)*180;
     let newHeight = (newBill/max)*180;
 
