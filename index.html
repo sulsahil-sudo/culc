@@ -36,7 +36,7 @@ h2 { text-align: center; color: #0f766e; margin-bottom: 20px; }
 label { display: block; margin-top: 15px; font-weight: bold; color: #333; }
 input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; transition: 0.3s; }
 
-/* تنسيق الحقل عند الخطأ (معدل ليعمل على الآيفون) */
+/* تنسيق الحقل عند الخطأ */
 input.input-error { 
     border: 2px solid #ef4444 !important; 
     background-color: #ffe4e6 !important; 
@@ -222,6 +222,12 @@ function calcElec() {
     <b>الضريبة (15%):</b> ${vat.toFixed(2)} ريال<br>
     <hr><b style="color:#0f766e; font-size:18px;">إجمالي الكهرباء: ${totals.elec.toFixed(2)} ريال</b>`;
     document.getElementById("e_result").style.display = "block";
+    
+    // تمرير الشاشة للأسفل بسلاسة حتى تظهر النتيجة
+    setTimeout(() => {
+        document.getElementById("e_result").scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+
     checkTotals();
 }
 
@@ -251,6 +257,12 @@ function calcWater() {
     <b>الضريبة (15%):</b> ${vat.toFixed(2)} ريال<br>
     <hr><b style="color:#0f766e; font-size:18px;">إجمالي الماء: ${totals.water.toFixed(2)} ريال</b>`;
     document.getElementById("w_result").style.display = "block";
+    
+    // تمرير الشاشة للأسفل بسلاسة حتى تظهر النتيجة
+    setTimeout(() => {
+        document.getElementById("w_result").scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+
     checkTotals();
 }
 
@@ -259,6 +271,11 @@ function calcGrandTotal() {
     let grandTotal = totals.elec + totals.water;
     document.getElementById("grandTotalValue").textContent = grandTotal.toFixed(2) + " ريال";
     document.getElementById("grandTotalResult").style.display = "block";
+    
+    // تمرير الشاشة للأسفل قليلاً لرؤية الإجمالي
+    setTimeout(() => {
+        document.getElementById("grandTotalResult").scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
 }
 </script>
 
