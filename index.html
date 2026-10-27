@@ -3,89 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>حاسبة الكهرباء والماء 2027</title>
-
+<title>حاسبة فواتير الكهرباء والماء (2027)</title>
 <style>
-body{
-    font-family:Tahoma,Arial;
-    background:#f4f7fb;
-    padding:20px;
-}
-.card{
-    max-width:650px;
-    margin:auto;
-    background:white;
-    padding:20px;
-    border-radius:15px;
-    box-shadow:0 3px 15px rgba(0,0,0,.1);
-}
-h2{
-    text-align:center;
-    color:#0f766e;
-}
-label{
-    display:block;
-    margin-top:15px;
-    font-weight:bold;
-}
-input,select,button{
-    width:100%;
-    padding:12px;
-    margin-top:5px;
-    border:1px solid #ccc;
-    border-radius:8px;
-    box-sizing: border-box;
-}
-button{
-    background:#0f766e;
-    color:white;
-    border:none;
-    cursor:pointer;
-    margin-top:20px;
-    font-size:16px;
-}
-button:hover{
-    background:#115e59;
-}
-.result{
-    margin-top:20px;
-    padding:15px;
-    background:#f8fafc;
-    border-radius:10px;
-}
-.chart{
-    display:flex;
-    align-items:flex-end;
-    gap:20px;
-    height:220px;
-    margin-top:20px;
-}
-.bar-wrap{
-    flex:1;
-    text-align:center;
-}
-.bar{
-    width:100%;
-    border-radius:10px 10px 0 0;
-    color:white;
-    font-weight:bold;
-}
-.old{ background:#3b82f6; }
-.new{ background:#10b981; }
-hr { margin: 15px 0; border: 0; border-top: 1px solid #ccc; }
+body{ font-family:Tahoma,Arial; background:#f4f7fb; padding:20px; margin: 0; }
+.card{ max-width:650px; margin:auto; background:white; padding:20px; border-radius:15px; box-shadow:0 3px 15px rgba(0,0,0,.1); }
+h2{ text-align:center; color:#0f766e; }
+h3{ color:#0f766e; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px; margin-top: 25px; }
+label{ display:block; margin-top:15px; font-weight:bold; }
+input,select,button{ width:100%; padding:12px; margin-top:5px; border:1px solid #ccc; border-radius:8px; box-sizing: border-box; }
+button{ background:#0f766e; color:white; border:none; cursor:pointer; margin-top:25px; font-size:18px; font-weight: bold; }
+button:hover{ background:#115e59; }
+.result{ margin-top:20px; padding:15px; background:#f8fafc; border-radius:10px; display: none; line-height: 1.8; }
+.chart{ display:flex; align-items:flex-end; gap:20px; height:220px; margin-top:30px; display: none; }
+.bar-wrap{ flex:1; text-align:center; }
+.bar{ width:100%; border-radius:10px 10px 0 0; color:white; font-weight:bold; display: flex; justify-content: center; align-items: flex-start; padding-top: 5px; box-sizing: border-box; }
+.old{ background:#3b82f6; } .new{ background:#10b981; }
 </style>
 </head>
-
 <body>
-
 <div class="card">
+<h2>⚡️💧 حاسبة فواتير الكهرباء والماء (دقيقة)</h2>
 
-<h2>⚡️💧 حاسبة فاتورة الكهرباء والماء 2027</h2>
-
-<label>الاستهلاك الشهري للكهرباء (ك.و.س)</label>
+<h3>⚡️ الكهرباء</h3>
+<label>الاستهلاك الشهري (ك.و.س)</label>
 <input type="number" id="usage" placeholder="مثال: 3500">
-
-<label>سعة القاطع</label>
+<label>سعة القاطع (الكهرباء)</label>
 <select id="breaker">
   <option value="70">20 - أقل من 100 أمبير (70 ريال)</option>
   <option value="80">100 - أقل من 200 أمبير (80 ريال)</option>
@@ -93,107 +35,106 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid #ccc; }
   <option value="100">300 أمبير فأكثر (100 ريال)</option>
 </select>
 
-<hr>
+<h3>💧 الماء والصرف الصحي</h3>
+<label>استهلاك الماء (متر مكعب)</label>
+<input type="number" id="waterUsage" placeholder="مثال: 25">
+<label>قطر عداد الماء</label>
+<select id="waterMeter">
+  <option value="20">20 ملم أو أقل (رسوم ثابتة 30 ريال)</option>
+  <option value="40">21 - 40 ملم (رسوم ثابتة 60 ريال)</option>
+  <option value="60">41 - 65 ملم (رسوم ثابتة 90 ريال)</option>
+  <option value="80">66 - 100 ملم (رسوم ثابتة 120 ريال)</option>
+  <option value="100">أكثر من 100 ملم (رسوم ثابتة 150 ريال)</option>
+</select>
 
-<label>الاستهلاك الشهري للماء (متر مكعب)</label>
-<input type="number" id="waterUsage" placeholder="مثال: 15">
-
-<hr>
-
-<label>مبلغ فاتورة الشهر الماضي (اختياري للمقارنة)</label>
+<h3>📊 المقارنة</h3>
+<label>مبلغ فاتورة الشهر الماضي - إجمالي (اختياري)</label>
 <input type="number" id="oldBill" placeholder="مثال: 1000">
-
-<button onclick="calculate()">احسب</button>
-
-<div id="result" class="result">
-أدخل البيانات ثم اضغط احسب.
+<button onclick="calculate()">احسب الإجمالي</button>
+<div id="result" class="result"></div>
+<div id="chart" class="chart">
+    <div class="bar-wrap"><div id="oldBar" class="bar old"></div><div>الشهر الماضي</div></div>
+    <div class="bar-wrap"><div id="newBar" class="bar new"></div><div>الشهر الجديد</div></div>
 </div>
-
-<div id="chart" class="chart" style="display:none">
-    <div class="bar-wrap">
-        <div id="oldBar" class="bar old"></div>
-        <div>السابقة</div>
-    </div>
-
-    <div class="bar-wrap">
-        <div id="newBar" class="bar new"></div>
-        <div>الجديدة</div>
-    </div>
-</div>
-
 </div>
 
 <script>
-
 function calculate() {
-
-    // الكهرباء
+    // 1. الكهرباء
     let usage = Number(document.getElementById("usage").value);
-    let fixed = Number(document.getElementById("breaker").value);
+    let elecFixed = Number(document.getElementById("breaker").value);
+    if(!usage || usage <= 0){ alert("الرجاء إدخال استهلاك الكهرباء"); return; }
+    let tier1 = Math.min(usage, 6000);
+    let tier2 = Math.max(usage - 6000, 0);
+    let elecEnergyCost = (tier1 * 0.21) + (tier2 * 0.33);
+    let elecSubtotal = elecEnergyCost + elecFixed;
+    let elecVat = elecSubtotal * 0.15;
+    let elecTotal = elecSubtotal + elecVat;
+
+    // 2. الماء والصرف الصحي
+    let wUsage = Number(document.getElementById("waterUsage").value) || 0;
+    let wMeter = Number(document.getElementById("waterMeter").value);
+    
+    // حساب شرائح الماء (1, 2, 4, 6 ريال)
+    let wTier1 = Math.min(wUsage, 15);
+    let wTier2 = Math.max(Math.min(wUsage - 15, 15), 0);
+    let wTier3 = Math.max(Math.min(wUsage - 30, 15), 0);
+    let wTier4 = Math.max(wUsage - 45, 0);
+    
+    let wEnergyCost = (wTier1 * 1) + (wTier2 * 2) + (wTier3 * 4) + (wTier4 * 6);
+    let wSewageCost = wEnergyCost * 0.5; // الصرف الصحي 50% من قيمة الماء
+    
+    // الرسوم الثابتة (ماء + صرف صحي) بناءً على القطر
+    let wFixed = 0;
+    if(wMeter == 20) wFixed = 20 + 10;
+    else if(wMeter == 40) wFixed = 40 + 20;
+    else if(wMeter == 60) wFixed = 60 + 30;
+    else if(wMeter == 80) wFixed = 80 + 40;
+    else wFixed = 100 + 50;
+
+    let wSubtotal = wEnergyCost + wSewageCost + wFixed;
+    let wVat = wSubtotal * 0.15;
+    let wTotal = wSubtotal + wVat;
+
+    // 3. الإجمالي
+    let grandTotal = elecTotal + wTotal;
     let oldBill = Number(document.getElementById("oldBill").value);
 
-    if(!usage || usage <= 0){
-        alert("أدخل استهلاك الكهرباء بالكيلوواط");
-        return;
-    }
-
-    let tier1 = Math.min(usage,6000);
-    let tier2 = Math.max(usage-6000,0);
-    let energyCost = (tier1 * 0.21) + (tier2 * 0.33);
-
-    // الماء (تعريفة تقديرية سكنية: 0.15 ريال للمتر المكعب حتى 50، و 0.30 لما فوق 50)
-    let waterUsage = Number(document.getElementById("waterUsage").value) || 0;
-    let waterTier1 = Math.min(waterUsage, 50);
-    let waterTier2 = Math.max(waterUsage - 50, 0);
-    let waterCost = (waterTier1 * 0.15) + (waterTier2 * 0.30);
-    
-    // إجمالي الخدمات
-    let subtotal = energyCost + fixed + waterCost;
-    let vat = subtotal * 0.15;
-    let newBill = subtotal + vat;
-
     let html = `
-    <b>رسوم الكهرباء:</b> ${energyCost.toFixed(2)} ريال<br>
-    <b>الرسوم الثابتة للكهرباء:</b> ${fixed.toFixed(2)} ريال<br>
-    <b>رسوم المياه:</b> ${waterCost.toFixed(2)} ريال<br>
-    <b>ضريبة القيمة المضافة (15%):</b> ${vat.toFixed(2)} ريال<br><br>
-    <b style="color:green; font-size:18px;">إجمالي الفاتورة (كهرباء + ماء): ${newBill.toFixed(2)} ريال</b>
+    <b style="color:#0f766e;">تفاصيل الكهرباء:</b><br>
+    استهلاك: ${elecEnergyCost.toFixed(2)} | ثابت: ${elecFixed.toFixed(2)} | ضريبة: ${elecVat.toFixed(2)}<br>
+    <b>مجموع الكهرباء: ${elecTotal.toFixed(2)} ريال</b><br><br>
+
+    <b style="color:#0f766e;">تفاصيل الماء والصرف:</b><br>
+    استهلاك الماء: ${wEnergyCost.toFixed(2)} ريال<br>
+    الصرف الصحي: ${wSewageCost.toFixed(2)} ريال<br>
+    رسوم ثابتة: ${wFixed.toFixed(2)} ريال<br>
+    ضريبة: ${wVat.toFixed(2)} ريال<br>
+    <b>مجموع الماء: ${wTotal.toFixed(2)} ريال</b><br><br>
+    
+    <hr style="border: 1px solid #e2e8f0; margin: 15px 0;">
+    <b style="font-size:20px; color:#115e59;">إجمالي الفاتورة: ${grandTotal.toFixed(2)} ريال</b>
     `;
 
     if(oldBill > 0){
-        let diff = newBill - oldBill;
+        let diff = grandTotal - oldBill;
         let pct = (diff / oldBill) * 100;
-
-        html += `
-        <hr>
-        <b>فاتورة الشهر الماضي:</b> ${oldBill.toFixed(2)} ريال<br>
-        <b>الفرق:</b> ${diff.toFixed(2)} ريال<br>
-        <b>نسبة التغير:</b> ${pct.toFixed(2)}%
-        `;
-
-        drawChart(oldBill,newBill);
-    }
-
+        let diffText = diff > 0 ? "زيادة" : "انخفاض";
+        html += `<hr><b>فاتورة الشهر الماضي:</b> ${oldBill.toFixed(2)}<br><b>الفرق:</b> ${Math.abs(diff).toFixed(2)} (${diffText})<br><b>النسبة:</b> ${Math.abs(pct).toFixed(2)}%`;
+        drawChart(oldBill, grandTotal);
+    } else { document.getElementById("chart").style.display="none"; }
     document.getElementById("result").innerHTML = html;
+    document.getElementById("result").style.display = "block";
 }
 
-function drawChart(oldBill,newBill){
+function drawChart(oldBill, newBill){
     document.getElementById("chart").style.display="flex";
-    let max = Math.max(oldBill,newBill);
-    let oldHeight = (oldBill/max)*180;
-    let newHeight = (newBill/max)*180;
-
-    let oldBar = document.getElementById("oldBar");
-    let newBar = document.getElementById("newBar");
-
-    oldBar.style.height = oldHeight + "px";
-    newBar.style.height = newHeight + "px";
-
-    oldBar.textContent = oldBill.toFixed(0);
-    newBar.textContent = newBill.toFixed(0);
+    let max = Math.max(oldBill, newBill);
+    document.getElementById("oldBar").style.height = ((oldBill/max)*180) + "px";
+    document.getElementById("newBar").style.height = ((newBill/max)*180) + "px";
+    document.getElementById("oldBar").textContent = oldBill.toFixed(0);
+    document.getElementById("newBar").textContent = newBill.toFixed(0);
 }
-
 </script>
-
 </body>
 </html>
