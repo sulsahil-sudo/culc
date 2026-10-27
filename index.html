@@ -34,7 +34,12 @@ h2 { text-align: center; color: #0f766e; margin-bottom: 20px; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 label { display: block; margin-top: 15px; font-weight: bold; color: #333; }
-input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; transition: 0.3s; }
+
+/* تنسيق الحقل عند الخطأ */
+input.input-error { border: 2px solid #ef4444 !important; background-color: #fef2f2; }
+.error-msg { color: #ef4444; font-size: 14px; margin-top: 5px; display: none; font-weight: bold; }
+
 .btn-calc { background: #0f766e; color: white; border: none; cursor: pointer; margin-top: 20px; font-size: 18px; font-weight: bold; transition: 0.3s; }
 .btn-calc:hover { background: #115e59; }
 
@@ -72,10 +77,14 @@ input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px
       <option value="industrial">صناعي</option>
       <option value="government">حكومي</option>
     </select>
+    
     <label>الاستهلاك الشهري (ك.و.س)</label>
-    <input type="number" id="e_usage" placeholder="مثال: 3500" oninput="resetOnChange('e')">
+    <input type="number" id="e_usage" placeholder="مثال: 3500" oninput="clearError('e_usage', 'e_error'); resetOnChange('e')">
+    <div id="e_error" class="error-msg">الرجاء إدخال استهلاك الكهرباء أولاً!</div>
+    
     <label>سعة القاطع</label>
     <select id="e_breaker" onchange="resetOnChange('e')"></select>
+    
     <button class="btn-calc" onclick="calcElec()">احسب الكهرباء</button>
     <div id="e_result" class="result"></div>
 </div>
@@ -88,10 +97,14 @@ input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px
       <option value="commercial">تجاري / صناعي (سعر موحد)</option>
       <option value="government">حكومي (سعر موحد)</option>
     </select>
+    
     <label>استهلاك الماء (متر مكعب)</label>
-    <input type="number" id="w_usage" placeholder="مثال: 25" oninput="resetOnChange('w')">
+    <input type="number" id="w_usage" placeholder="مثال: 25" oninput="clearError('w_usage', 'w_error'); resetOnChange('w')">
+    <div id="w_error" class="error-msg">الرجاء إدخال استهلاك الماء أولاً!</div>
+    
     <label>قطر عداد الماء</label>
     <select id="w_meter" onchange="resetOnChange('w')"></select>
+    
     <button class="btn-calc" onclick="calcWater()">احسب الماء</button>
     <div id="w_result" class="result"></div>
 </div>
@@ -101,6 +114,20 @@ input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px
 <script>
 let totals = { elec: 0, water: 0 };
 let calculated = { elec: false, water: false };
+
+// دالة إزالة الخطأ عند الكتابة في الحقل
+function clearError(inputId, errorId) {
+    document.getElementById(inputId).classList.remove("input-error");
+    document.getElementById(errorId).style.display = "none";
+}
+
+// دالة إظهار الخطأ والتركيز على الحقل
+function showError(inputId, errorId) {
+    let input = document.getElementById(inputId);
+    input.classList.add("input-error");
+    document.getElementById(errorId).style.display = "block";
+    input.focus(); // توجيه المؤشر للحقل
+}
 
 function updateElecBreaker() {
     let sector = document.getElementById("e_sector").value;
@@ -140,16 +167,13 @@ function resetOnChange(type) {
         document.getElementById("w_result").style.display = "none";
     }
     
-    // إخفاء الإجمالي الكلي وتصفير الزر
     document.getElementById("grandTotalResult").style.display = "none";
     let btn = document.getElementById("btnGrandTotal");
     btn.disabled = true;
     btn.classList.remove("active");
-    
     checkTotals();
 }
 
-// التحقق من اكتمال الفواتير لتفعيل الزر
 function checkTotals() {
     let btn = document.getElementById("btnGrandTotal");
     if (calculated.elec && calculated.water) {
@@ -165,7 +189,12 @@ function checkTotals() {
 function calcElec() {
     let usage = Number(document.getElementById("e_usage").value);
     let fixed = Number(document.getElementById("e_breaker").value);
-    if(!usage || usage <= 0){ alert("أدخل استهلاك الكهرباء"); return; }
+    
+    // التحقق من إدخال الاستهلاك
+    if(!usage || usage <= 0){ 
+        showError('e_usage', 'e_error'); 
+        return; 
+    }
     
     let sector = document.getElementById("e_sector").value;
     let energyCost = 0;
@@ -190,9 +219,15 @@ function calcElec() {
 
 // 2. حساب الماء
 function calcWater() {
-    let usage = Number(document.getElementById("w_usage").value) || 0;
+    let usage = Number(document.getElementById("w_usage").value);
     let fixed = Number(document.getElementById("w_meter").value);
     let sector = document.getElementById("w_sector").value;
+
+    // التحقق من إدخال الاستهلاك
+    if(!usage || usage <= 0){ 
+        showError('w_usage', 'w_error'); 
+        return; 
+    }
 
     let waterCost = 0, sewageCost = 0;
     if (sector === "residential") {
