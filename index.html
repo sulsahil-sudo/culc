@@ -107,7 +107,7 @@ button:hover{
 <div id="chart" class="chart" style="display:none">
     <div class="bar-wrap">
         <div id="oldBar" class="bar old"></div>
-        <div>الحالية</div>
+        <div>السابقه</div>
     </div>
 
     <div class="bar-wrap">
@@ -156,7 +156,7 @@ function calculate() {
 
         html += `
         <hr>
-        <b>الفاتورة الحالية:</b> ${oldBill.toFixed(2)} ريال<br>
+        <b>الفاتورة السابقه:</b> ${oldBill.toFixed(2)} ريال<br>
         <b>الفرق:</b> ${diff.toFixed(2)} ريال<br>
         <b>نسبة التغير:</b> ${pct.toFixed(2)}%
         `;
