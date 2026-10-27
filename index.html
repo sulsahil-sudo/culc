@@ -36,9 +36,18 @@ h2 { text-align: center; color: #0f766e; margin-bottom: 20px; }
 label { display: block; margin-top: 15px; font-weight: bold; color: #333; }
 input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; transition: 0.3s; }
 
-/* تنسيق الحقل عند الخطأ */
-input.input-error { border: 2px solid #ef4444 !important; background-color: #fef2f2; }
-.error-msg { color: #ef4444; font-size: 14px; margin-top: 5px; display: none; font-weight: bold; }
+/* تنسيق الحقل عند الخطأ (معدل ليعمل على الآيفون) */
+input.input-error { 
+    border: 2px solid #ef4444 !important; 
+    background-color: #ffe4e6 !important; 
+}
+.error-msg { 
+    color: #dc2626; 
+    font-size: 14px; 
+    margin-top: 5px; 
+    display: none; 
+    font-weight: bold; 
+}
 
 .btn-calc { background: #0f766e; color: white; border: none; cursor: pointer; margin-top: 20px; font-size: 18px; font-weight: bold; transition: 0.3s; }
 .btn-calc:hover { background: #115e59; }
@@ -175,7 +184,6 @@ function resetOnChange(type) {
 
 function checkTotals() {
     let btn = document.getElementById("btnGrandTotal");
-    // الزر ينشط فقط إذا تم حساب الكهرباء والماء (الماء يعتبر محسوباً حتى لو صفر)
     if (calculated.elec && calculated.water) {
         btn.disabled = false;
         btn.classList.add("active");
@@ -219,7 +227,7 @@ function calcElec() {
 
 // 2. حساب الماء (اختياري - صفر إذا كان فارغاً)
 function calcWater() {
-    let usage = Number(document.getElementById("w_usage").value) || 0; // إذا كان فارغاً يعتبر صفر
+    let usage = Number(document.getElementById("w_usage").value) || 0;
     let fixed = Number(document.getElementById("w_meter").value);
     let sector = document.getElementById("w_sector").value;
 
