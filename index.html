@@ -3,49 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>حاسبة الكهرباء والماء</title>
+<title>حاسبة الفواتير الشاملة</title>
 <style>
 body { font-family: Tahoma, Arial; background: #f4f7fb; padding: 15px; margin: 0; }
 .card { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 3px 15px rgba(0,0,0,.1); }
 h2 { text-align: center; color: #0f766e; margin-bottom: 20px; }
 
-/* تنسيق زر الإجمالي في الأعلى */
+/* تنسيق زر الإجمالي */
 .total-section { margin-bottom: 20px; }
 .btn-total { 
-    width: 100%; 
-    padding: 15px; 
-    font-size: 18px; 
-    font-weight: bold; 
-    border: none; 
-    border-radius: 8px; 
-    background: #94a3b8; /* لون رمادي شفاف */
-    color: white; 
-    cursor: not-allowed; /* منع الضغط */
-    opacity: 0.6; 
-    transition: 0.3s; 
+    width: 100%; padding: 15px; font-size: 18px; font-weight: bold; 
+    border: none; border-radius: 8px; background: #94a3b8; color: white; 
+    cursor: not-allowed; opacity: 0.6; transition: 0.3s; 
 }
 .btn-total.active { 
-    background: #2563eb; /* لون أزرق نشط */
-    cursor: pointer; 
-    opacity: 1; 
+    background: #2563eb; cursor: pointer; opacity: 1; 
     box-shadow: 0 4px 10px rgba(37,99,235,0.3);
 }
 .btn-total.active:hover { background: #1d4ed8; }
-
-.total-result { 
-    margin-top: 10px; 
-    padding: 15px; 
-    background: #dcfce7; 
-    border-radius: 10px; 
-    text-align: center; 
-    border: 1px solid #86efac; 
-    display: none; 
-}
+.total-result { margin-top: 10px; padding: 15px; background: #dcfce7; border-radius: 10px; text-align: center; border: 1px solid #86efac; display: none; }
 .total-result span { font-size: 22px; font-weight: bold; color: #166534; }
 
-/* باقي التنسيقات */
-.tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-.tab-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; background: #e2e8f0; color: #333; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+/* التبويبات */
+.tabs { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+.tab-btn { flex: 1 1 40%; padding: 12px; border: none; border-radius: 8px; background: #e2e8f0; color: #333; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.3s; }
 .tab-btn.active { background: #0f766e; color: white; }
 
 .tab-content { display: none; }
@@ -58,124 +39,105 @@ input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px
 .btn-calc:hover { background: #115e59; }
 
 .result { margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 10px; display: none; line-height: 1.8; border: 1px solid #e2e8f0; }
-.chart { display: flex; align-items: flex-end; gap: 20px; height: 180px; margin-top: 20px; display: none; }
-.bar-wrap { flex: 1; text-align: center; }
-.bar { width: 100%; border-radius: 10px 10px 0 0; color: white; font-weight: bold; display: flex; justify-content: center; align-items: flex-start; padding-top: 5px; box-sizing: border-box; }
-.old { background: #3b82f6; } .new { background: #10b981; }
 </style>
 </head>
 <body>
 
 <div class="card">
-<h2>⚡️💧 حاسبة الفواتير</h2>
+<h2>🧾 حاسبة الفواتير الشاملة</h2>
 
-<!-- زر الإجمالي الشفاف في الأعلى -->
+<!-- زر الإجمالي -->
 <div class="total-section">
     <button id="btnGrandTotal" class="btn-total" onclick="calcGrandTotal()" disabled>
-        📊 احسب إجمالي الفاتورتين
+        📊 احسب إجمالي جميع الفواتير
     </button>
     <div id="grandTotalResult" class="total-result">
-        إجمالي الكهرباء والماء:<br>
+        إجمالي جميع الفواتير:<br>
         <span id="grandTotalValue">0.00 ريال</span>
     </div>
 </div>
 
+<!-- التبويبات -->
 <div class="tabs">
     <button class="tab-btn active" onclick="openTab('elec')" id="btn-elec">⚡️ الكهرباء</button>
     <button class="tab-btn" onclick="openTab('water')" id="btn-water">💧 الماء</button>
+    <button class="tab-btn" onclick="openTab('internet')" id="btn-internet">🌐 الإنترنت</button>
+    <button class="tab-btn" onclick="openTab('mobile')" id="btn-mobile">📱 الجوال</button>
 </div>
 
-<!-- تبويب الكهرباء -->
+<!-- 1. تبويب الكهرباء -->
 <div id="elec" class="tab-content active">
     <label>نوع القطاع (التعريفة)</label>
-    <select id="e_sector" onchange="updateElecBreaker()">
+    <select id="e_sector" onchange="updateElecBreaker(); resetOnChange('e')">
       <option value="residential">سكني</option>
       <option value="commercial">تجاري / تعليمي / صحي أهلي</option>
       <option value="industrial">صناعي</option>
       <option value="government">حكومي</option>
     </select>
-
-    <label>الاستهلاك الشهري للكهرباء (ك.و.س)</label>
-    <input type="number" id="e_usage" placeholder="مثال: 3500">
-    
-    <label>سعة القاطع (الكهرباء)</label>
-    <select id="e_breaker"></select>
-
-    <label>مبلغ فاتورة الكهرباء للشهر الماضي (اختياري)</label>
-    <input type="number" id="e_oldBill" placeholder="مثال: 500">
-    
+    <label>الاستهلاك الشهري (ك.و.س)</label>
+    <input type="number" id="e_usage" placeholder="مثال: 3500" oninput="resetOnChange('e')">
+    <label>سعة القاطع</label>
+    <select id="e_breaker" onchange="resetOnChange('e')"></select>
     <button class="btn-calc" onclick="calcElec()">احسب الكهرباء</button>
     <div id="e_result" class="result"></div>
-    <div id="e_chart" class="chart">
-        <div class="bar-wrap"><div id="e_oldBar" class="bar old"></div><div>الماضي</div></div>
-        <div class="bar-wrap"><div id="e_newBar" class="bar new"></div><div>الجديد</div></div>
-    </div>
 </div>
 
-<!-- تبويب الماء -->
+<!-- 2. تبويب الماء -->
 <div id="water" class="tab-content">
     <label>نوع القطاع (تعريفة الماء)</label>
-    <select id="w_sector" onchange="updateWaterMeter()">
+    <select id="w_sector" onchange="updateWaterMeter(); resetOnChange('w')">
       <option value="residential">سكني (شرائح)</option>
       <option value="commercial">تجاري / صناعي (سعر موحد)</option>
       <option value="government">حكومي (سعر موحد)</option>
     </select>
-
     <label>استهلاك الماء (متر مكعب)</label>
-    <input type="number" id="w_usage" placeholder="مثال: 25">
-    
+    <input type="number" id="w_usage" placeholder="مثال: 25" oninput="resetOnChange('w')">
     <label>قطر عداد الماء</label>
-    <select id="w_meter"></select>
-
-    <label>مبلغ فاتورة الماء للشهر الماضي (اختياري)</label>
-    <input type="number" id="w_oldBill" placeholder="مثال: 150">
-    
+    <select id="w_meter" onchange="resetOnChange('w')"></select>
     <button class="btn-calc" onclick="calcWater()">احسب الماء</button>
     <div id="w_result" class="result"></div>
-    <div id="w_chart" class="chart">
-        <div class="bar-wrap"><div id="w_oldBar" class="bar old"></div><div>الماضي</div></div>
-        <div class="bar-wrap"><div id="w_newBar" class="bar new"></div><div>الجديد</div></div>
-    </div>
+</div>
+
+<!-- 3. تبويب الإنترنت -->
+<div id="internet" class="tab-content">
+    <label>قيمة باقة الإنترنت الشهرية (قبل الضريبة)</label>
+    <input type="number" id="i_cost" placeholder="مثال: 299" oninput="resetOnChange('i')">
+    <button class="btn-calc" onclick="calcInternet()">احسب الإنترنت</button>
+    <div id="i_result" class="result"></div>
+</div>
+
+<!-- 4. تبويب الجوال -->
+<div id="mobile" class="tab-content">
+    <label>قيمة باقة الجوال الشهرية (قبل الضريبة)</label>
+    <input type="number" id="m_cost" placeholder="مثال: 150" oninput="resetOnChange('m')">
+    <button class="btn-calc" onclick="calcMobile()">احسب الجوال</button>
+    <div id="m_result" class="result"></div>
 </div>
 
 </div>
 
 <script>
-let lastElecTotal = 0;
-let lastWaterTotal = 0;
-let elecCalculated = false;
-let waterCalculated = false;
+let totals = { elec: 0, water: 0, internet: 0, mobile: 0 };
+let calculated = { elec: false, water: false, internet: false, mobile: false };
 
 function updateElecBreaker() {
     let sector = document.getElementById("e_sector").value;
     let bSelect = document.getElementById("e_breaker");
-    if (sector === "residential") {
-        bSelect.innerHTML = `<option value="70">20 - أقل من 100 أمبير (70 ريال)</option><option value="80">100 - أقل من 200 أمبير (80 ريال)</option><option value="90">200 - أقل من 300 أمبير (90 ريال)</option><option value="100">300 أمبير فأكثر (100 ريال)</option>`;
-    } else if (sector === "commercial") {
-        bSelect.innerHTML = `<option value="350">20 - أقل من 100 أمبير (350 ريال)</option><option value="500">100 - أقل من 200 أمبير (500 ريال)</option><option value="700">200 - أقل من 300 أمبير (700 ريال)</option><option value="900">300 أمبير فأكثر (900 ريال)</option>`;
-    } else if (sector === "industrial") {
-        bSelect.innerHTML = `<option value="150">رسوم ثابتة صناعية (150 ريال)</option><option value="300">رسوم ثابتة صناعية (300 ريال)</option>`;
-    } else if (sector === "government") {
-        bSelect.innerHTML = `<option value="400">رسوم ثابتة حكومية (400 ريال)</option><option value="600">رسوم ثابتة حكومية (600 ريال)</option>`;
-    }
+    if (sector === "residential") bSelect.innerHTML = `<option value="70">20-99 أمبير (70 ريال)</option><option value="80">100-199 أمبير (80 ريال)</option><option value="90">200-299 أمبير (90 ريال)</option><option value="100">300+ أمبير (100 ريال)</option>`;
+    else if (sector === "commercial") bSelect.innerHTML = `<option value="350">20-99 أمبير (350 ريال)</option><option value="500">100-199 أمبير (500 ريال)</option><option value="700">200-299 أمبير (700 ريال)</option><option value="900">300+ أمبير (900 ريال)</option>`;
+    else if (sector === "industrial") bSelect.innerHTML = `<option value="150">صناعي (150 ريال)</option><option value="300">صناعي (300 ريال)</option>`;
+    else if (sector === "government") bSelect.innerHTML = `<option value="400">حكومي (400 ريال)</option><option value="600">حكومي (600 ريال)</option>`;
 }
 
 function updateWaterMeter() {
     let sector = document.getElementById("w_sector").value;
     let mSelect = document.getElementById("w_meter");
-    if (sector === "residential") {
-        mSelect.innerHTML = `<option value="30">20 ملم أو أقل (ثابت 30 ريال)</option><option value="60">21 - 40 ملم (ثابت 60 ريال)</option><option value="90">41 - 65 ملم (ثابت 90 ريال)</option><option value="120">66 - 100 ملم (ثابت 120 ريال)</option>`;
-    } else if (sector === "commercial") {
-        mSelect.innerHTML = `<option value="60">20 - 40 ملم (ثابت 60 ريال)</option><option value="90">41 - 65 ملم (ثابت 90 ريال)</option><option value="120">66 - 100 ملم (ثابت 120 ريال)</option><option value="225">أكثر من 100 ملم (ثابت 225 ريال)</option>`;
-    } else if (sector === "government") {
-        mSelect.innerHTML = `<option value="1500">حكومي (رسوم ثابتة إجمالية 1500 ريال)</option>`;
-    }
+    if (sector === "residential") mSelect.innerHTML = `<option value="30">20 ملم أو أقل (30 ريال)</option><option value="60">21-40 ملم (60 ريال)</option><option value="90">41-65 ملم (90 ريال)</option><option value="120">66-100 ملم (120 ريال)</option>`;
+    else if (sector === "commercial") mSelect.innerHTML = `<option value="60">20-40 ملم (60 ريال)</option><option value="90">41-65 ملم (90 ريال)</option><option value="120">66-100 ملم (120 ريال)</option><option value="225">100+ ملم (225 ريال)</option>`;
+    else if (sector === "government") mSelect.innerHTML = `<option value="1500">حكومي (1500 ريال)</option>`;
 }
 
-window.onload = function() {
-    updateElecBreaker();
-    updateWaterMeter();
-};
+window.onload = function() { updateElecBreaker(); updateWaterMeter(); };
 
 function openTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -184,130 +146,141 @@ function openTab(tabName) {
     document.getElementById('btn-' + tabName).classList.add('active');
 }
 
-function calcElec() {
-    let sector = document.getElementById("e_sector").value;
-    let usage = Number(document.getElementById("e_usage").value);
-    let fixed = Number(document.getElementById("e_breaker").value);
-    let oldBill = Number(document.getElementById("e_oldBill").value);
-
-    if(!usage || usage <= 0){ alert("الرجاء إدخال استهلاك الكهرباء"); return; }
-
-    let energyCost;
-    if (sector === "residential") {
-        energyCost = (Math.min(usage, 6000) * 0.21) + (Math.max(usage - 6000, 0) * 0.33);
-    } else if (sector === "commercial") {
-        energyCost = (Math.min(usage, 6000) * 0.25) + (Math.max(usage - 6000, 0) * 0.35);
-    } else if (sector === "industrial") {
-        energyCost = usage * 0.23;
-    } else if (sector === "government") {
-        energyCost = usage * 0.35;
+// دالة تصفير الحسابات عند تغيير أي قيمة
+function resetOnChange(type) {
+    if (type === 'e') {
+        calculated.elec = false;
+        totals.elec = 0;
+        document.getElementById("e_result").style.display = "none";
+    } else if (type === 'w') {
+        calculated.water = false;
+        totals.water = 0;
+        document.getElementById("w_result").style.display = "none";
+    } else if (type === 'i') {
+        calculated.internet = false;
+        totals.internet = 0;
+        document.getElementById("i_result").style.display = "none";
+    } else if (type === 'm') {
+        calculated.mobile = false;
+        totals.mobile = 0;
+        document.getElementById("m_result").style.display = "none";
     }
     
+    // إخفاء الإجمالي الكلي وتصفير الزر
+    document.getElementById("grandTotalResult").style.display = "none";
+    let btn = document.getElementById("btnGrandTotal");
+    btn.disabled = true;
+    btn.classList.remove("active");
+    
+    checkTotals();
+}
+
+// التحقق من اكتمال جميع الفواتير لتفعيل الزر
+function checkTotals() {
+    let btn = document.getElementById("btnGrandTotal");
+    // الزر ما ينشط إلا إذا كانت كل الخدمات محسوبة
+    if (calculated.elec && calculated.water && calculated.internet && calculated.mobile) {
+        btn.disabled = false;
+        btn.classList.add("active");
+    } else {
+        btn.disabled = true;
+        btn.classList.remove("active");
+    }
+}
+
+// 1. حساب الكهرباء
+function calcElec() {
+    let usage = Number(document.getElementById("e_usage").value);
+    let fixed = Number(document.getElementById("e_breaker").value);
+    if(!usage || usage <= 0){ alert("أدخل استهلاك الكهرباء"); return; }
+    
+    let sector = document.getElementById("e_sector").value;
+    let energyCost = 0;
+    if (sector === "residential") energyCost = (Math.min(usage, 6000) * 0.21) + (Math.max(usage - 6000, 0) * 0.33);
+    else if (sector === "commercial") energyCost = (Math.min(usage, 6000) * 0.25) + (Math.max(usage - 6000, 0) * 0.35);
+    else if (sector === "industrial") energyCost = usage * 0.23;
+    else if (sector === "government") energyCost = usage * 0.35;
+
     let subtotal = energyCost + fixed;
     let vat = subtotal * 0.15;
-    lastElecTotal = subtotal + vat;
-    elecCalculated = true;
+    totals.elec = subtotal + vat;
+    calculated.elec = true;
 
-    let html = `
-    <b>رسوم الاستهلاك:</b> ${energyCost.toFixed(2)} ريال<br>
-    <b>الرسوم الثابتة:</b> ${fixed.toFixed(2)} ريال<br>
+    document.getElementById("e_result").innerHTML = `
+    <b>الاستهلاك:</b> ${energyCost.toFixed(2)} ريال<br>
+    <b>الثابتة:</b> ${fixed.toFixed(2)} ريال<br>
     <b>الضريبة (15%):</b> ${vat.toFixed(2)} ريال<br>
-    <hr style="border:1px solid #ddd;">
-    <b style="font-size:18px; color:#0f766e;">إجمالي الكهرباء: ${lastElecTotal.toFixed(2)} ريال</b>
-    `;
-
-    if(oldBill > 0) {
-        let diff = lastElecTotal - oldBill;
-        let pct = (diff / oldBill) * 100;
-        let status = diff > 0 ? "زيادة" : "انخفاض";
-        html += `<hr style="border:1px solid #ddd;">
-        <b>فاتورة الشهر الماضي:</b> ${oldBill.toFixed(2)} ريال<br>
-        <b>الفرق:</b> ${Math.abs(diff).toFixed(2)} ريال (${status})<br>
-        <b>النسبة:</b> ${Math.abs(pct).toFixed(2)}%`;
-        drawChart('e_oldBar', 'e_newBar', 'e_chart', oldBill, lastElecTotal);
-    } else { document.getElementById('e_chart').style.display = 'none'; }
-
-    document.getElementById("e_result").innerHTML = html;
+    <hr><b style="color:#0f766e; font-size:18px;">إجمالي الكهرباء: ${totals.elec.toFixed(2)} ريال</b>`;
     document.getElementById("e_result").style.display = "block";
     checkTotals();
 }
 
+// 2. حساب الماء
 function calcWater() {
-    let sector = document.getElementById("w_sector").value;
     let usage = Number(document.getElementById("w_usage").value) || 0;
     let fixed = Number(document.getElementById("w_meter").value);
-    let oldBill = Number(document.getElementById("w_oldBill").value);
+    let sector = document.getElementById("w_sector").value;
 
-    let waterCost = 0;
-    let sewageCost = 0;
-
+    let waterCost = 0, sewageCost = 0;
     if (sector === "residential") {
-        let t1 = Math.min(usage, 15);
-        let t2 = Math.max(Math.min(usage - 15, 15), 0);
-        let t3 = Math.max(Math.min(usage - 30, 15), 0);
-        let t4 = Math.max(usage - 45, 0);
+        let t1 = Math.min(usage, 15), t2 = Math.max(Math.min(usage - 15, 15), 0), t3 = Math.max(Math.min(usage - 30, 15), 0), t4 = Math.max(usage - 45, 0);
         waterCost = (t1 * 1) + (t2 * 2) + (t3 * 4) + (t4 * 6);
         sewageCost = waterCost * 0.5;
-    } else if (sector === "commercial") {
-        waterCost = usage * 8;
-        sewageCost = usage * 4;
-    } else if (sector === "government") {
-        waterCost = usage * 10;
-        sewageCost = usage * 5;
-    }
+    } else if (sector === "commercial") { waterCost = usage * 8; sewageCost = usage * 4; }
+    else if (sector === "government") { waterCost = usage * 10; sewageCost = usage * 5; }
 
     let subtotal = waterCost + sewageCost + fixed;
     let vat = subtotal * 0.15;
-    lastWaterTotal = subtotal + vat;
-    waterCalculated = true;
+    totals.water = subtotal + vat;
+    calculated.water = true;
 
-    let html = `
-    <b>قيمة استهلاك الماء:</b> ${waterCost.toFixed(2)} ريال<br>
-    <b>قيمة الصرف الصحي:</b> ${sewageCost.toFixed(2)} ريال<br>
-    <b>الرسوم الثابتة:</b> ${fixed.toFixed(2)} ريال<br>
+    document.getElementById("w_result").innerHTML = `
+    <b>الماء:</b> ${waterCost.toFixed(2)} ريال<br>
+    <b>الصرف الصحي:</b> ${sewageCost.toFixed(2)} ريال<br>
+    <b>الثابتة:</b> ${fixed.toFixed(2)} ريال<br>
     <b>الضريبة (15%):</b> ${vat.toFixed(2)} ريال<br>
-    <hr style="border:1px solid #ddd;">
-    <b style="font-size:18px; color:#0f766e;">إجمالي الماء: ${lastWaterTotal.toFixed(2)} ريال</b>
-    `;
-
-    if(oldBill > 0) {
-        let diff = lastWaterTotal - oldBill;
-        let pct = (diff / oldBill) * 100;
-        let status = diff > 0 ? "زيادة" : "انخفاض";
-        html += `<hr style="border:1px solid #ddd;">
-        <b>فاتورة الشهر الماضي:</b> ${oldBill.toFixed(2)} ريال<br>
-        <b>الفرق:</b> ${Math.abs(diff).toFixed(2)} ريال (${status})<br>
-        <b>النسبة:</b> ${Math.abs(pct).toFixed(2)}%`;
-        drawChart('w_oldBar', 'w_newBar', 'w_chart', oldBill, lastWaterTotal);
-    } else { document.getElementById('w_chart').style.display = 'none'; }
-
-    document.getElementById("w_result").innerHTML = html;
+    <hr><b style="color:#0f766e; font-size:18px;">إجمالي الماء: ${totals.water.toFixed(2)} ريال</b>`;
     document.getElementById("w_result").style.display = "block";
     checkTotals();
 }
 
-// تفعيل الزر فقط إذا تم حساب الخدمتين
-function checkTotals() {
-    let btn = document.getElementById("btnGrandTotal");
-    if (elecCalculated && waterCalculated) {
-        btn.disabled = false;
-        btn.classList.add("active");
-    }
+// 3. حساب الإنترنت
+function calcInternet() {
+    let cost = Number(document.getElementById("i_cost").value);
+    if(!cost || cost <= 0){ alert("أدخل قيمة الباقة"); return; }
+    let vat = cost * 0.15;
+    totals.internet = cost + vat;
+    calculated.internet = true;
+
+    document.getElementById("i_result").innerHTML = `
+    <b>قيمة الباقة:</b> ${cost.toFixed(2)} ريال<br>
+    <b>الضريبة (15%):</b> ${vat.toFixed(2)} ريال<br>
+    <hr><b style="color:#0f766e; font-size:18px;">إجمالي الإنترنت: ${totals.internet.toFixed(2)} ريال</b>`;
+    document.getElementById("i_result").style.display = "block";
+    checkTotals();
 }
 
+// 4. حساب الجوال
+function calcMobile() {
+    let cost = Number(document.getElementById("m_cost").value);
+    if(!cost || cost <= 0){ alert("أدخل قيمة الباقة"); return; }
+    let vat = cost * 0.15;
+    totals.mobile = cost + vat;
+    calculated.mobile = true;
+
+    document.getElementById("m_result").innerHTML = `
+    <b>قيمة الباقة:</b> ${cost.toFixed(2)} ريال<br>
+    <b>الضريبة (15%):</b> ${vat.toFixed(2)} ريال<br>
+    <hr><b style="color:#0f766e; font-size:18px;">إجمالي الجوال: ${totals.mobile.toFixed(2)} ريال</b>`;
+    document.getElementById("m_result").style.display = "block";
+    checkTotals();
+}
+
+// حساب الإجمالي الكلي
 function calcGrandTotal() {
-    let total = lastElecTotal + lastWaterTotal;
-    document.getElementById("grandTotalValue").textContent = total.toFixed(2) + " ريال";
+    let grandTotal = totals.elec + totals.water + totals.internet + totals.mobile;
+    document.getElementById("grandTotalValue").textContent = grandTotal.toFixed(2) + " ريال";
     document.getElementById("grandTotalResult").style.display = "block";
-}
-
-function drawChart(oldId, newId, chartId, oldVal, newVal){
-    document.getElementById(chartId).style.display="flex";
-    let max = Math.max(oldVal, newVal);
-    document.getElementById(oldId).style.height = ((oldVal/max)*150) + "px";
-    document.getElementById(newId).style.height = ((newVal/max)*150) + "px";
-    document.getElementById(oldId).textContent = oldVal.toFixed(0);
-    document.getElementById(newId).textContent = newVal.toFixed(0);
 }
 </script>
 
