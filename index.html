@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>حاسبة الفواتير الشاملة</title>
+<title>حاسبة الكهرباء والماء</title>
 <style>
 body { font-family: Tahoma, Arial; background: #f4f7fb; padding: 15px; margin: 0; }
 .card { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 3px 15px rgba(0,0,0,.1); }
@@ -25,8 +25,8 @@ h2 { text-align: center; color: #0f766e; margin-bottom: 20px; }
 .total-result span { font-size: 22px; font-weight: bold; color: #166534; }
 
 /* التبويبات */
-.tabs { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
-.tab-btn { flex: 1 1 40%; padding: 12px; border: none; border-radius: 8px; background: #e2e8f0; color: #333; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+.tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+.tab-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; background: #e2e8f0; color: #333; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
 .tab-btn.active { background: #0f766e; color: white; }
 
 .tab-content { display: none; }
@@ -44,15 +44,15 @@ input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px
 <body>
 
 <div class="card">
-<h2>🧾 حاسبة الفواتير الشاملة</h2>
+<h2>⚡️💧 حاسبة الكهرباء والماء</h2>
 
 <!-- زر الإجمالي -->
 <div class="total-section">
     <button id="btnGrandTotal" class="btn-total" onclick="calcGrandTotal()" disabled>
-        📊 احسب إجمالي جميع الفواتير
+        📊 احسب إجمالي الفاتورتين
     </button>
     <div id="grandTotalResult" class="total-result">
-        إجمالي جميع الفواتير:<br>
+        الإجمالي الكلي (كهرباء + ماء):<br>
         <span id="grandTotalValue">0.00 ريال</span>
     </div>
 </div>
@@ -61,8 +61,6 @@ input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px
 <div class="tabs">
     <button class="tab-btn active" onclick="openTab('elec')" id="btn-elec">⚡️ الكهرباء</button>
     <button class="tab-btn" onclick="openTab('water')" id="btn-water">💧 الماء</button>
-    <button class="tab-btn" onclick="openTab('internet')" id="btn-internet">🌐 الإنترنت</button>
-    <button class="tab-btn" onclick="openTab('mobile')" id="btn-mobile">📱 الجوال</button>
 </div>
 
 <!-- 1. تبويب الكهرباء -->
@@ -98,27 +96,11 @@ input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px
     <div id="w_result" class="result"></div>
 </div>
 
-<!-- 3. تبويب الإنترنت -->
-<div id="internet" class="tab-content">
-    <label>قيمة باقة الإنترنت الشهرية (قبل الضريبة)</label>
-    <input type="number" id="i_cost" placeholder="مثال: 299" oninput="resetOnChange('i')">
-    <button class="btn-calc" onclick="calcInternet()">احسب الإنترنت</button>
-    <div id="i_result" class="result"></div>
-</div>
-
-<!-- 4. تبويب الجوال -->
-<div id="mobile" class="tab-content">
-    <label>قيمة باقة الجوال الشهرية (قبل الضريبة)</label>
-    <input type="number" id="m_cost" placeholder="مثال: 150" oninput="resetOnChange('m')">
-    <button class="btn-calc" onclick="calcMobile()">احسب الجوال</button>
-    <div id="m_result" class="result"></div>
-</div>
-
 </div>
 
 <script>
-let totals = { elec: 0, water: 0, internet: 0, mobile: 0 };
-let calculated = { elec: false, water: false, internet: false, mobile: false };
+let totals = { elec: 0, water: 0 };
+let calculated = { elec: false, water: false };
 
 function updateElecBreaker() {
     let sector = document.getElementById("e_sector").value;
@@ -156,14 +138,6 @@ function resetOnChange(type) {
         calculated.water = false;
         totals.water = 0;
         document.getElementById("w_result").style.display = "none";
-    } else if (type === 'i') {
-        calculated.internet = false;
-        totals.internet = 0;
-        document.getElementById("i_result").style.display = "none";
-    } else if (type === 'm') {
-        calculated.mobile = false;
-        totals.mobile = 0;
-        document.getElementById("m_result").style.display = "none";
     }
     
     // إخفاء الإجمالي الكلي وتصفير الزر
@@ -175,11 +149,10 @@ function resetOnChange(type) {
     checkTotals();
 }
 
-// التحقق من اكتمال جميع الفواتير لتفعيل الزر
+// التحقق من اكتمال الفواتير لتفعيل الزر
 function checkTotals() {
     let btn = document.getElementById("btnGrandTotal");
-    // الزر ما ينشط إلا إذا كانت كل الخدمات محسوبة
-    if (calculated.elec && calculated.water && calculated.internet && calculated.mobile) {
+    if (calculated.elec && calculated.water) {
         btn.disabled = false;
         btn.classList.add("active");
     } else {
@@ -244,41 +217,9 @@ function calcWater() {
     checkTotals();
 }
 
-// 3. حساب الإنترنت
-function calcInternet() {
-    let cost = Number(document.getElementById("i_cost").value);
-    if(!cost || cost <= 0){ alert("أدخل قيمة الباقة"); return; }
-    let vat = cost * 0.15;
-    totals.internet = cost + vat;
-    calculated.internet = true;
-
-    document.getElementById("i_result").innerHTML = `
-    <b>قيمة الباقة:</b> ${cost.toFixed(2)} ريال<br>
-    <b>الضريبة (15%):</b> ${vat.toFixed(2)} ريال<br>
-    <hr><b style="color:#0f766e; font-size:18px;">إجمالي الإنترنت: ${totals.internet.toFixed(2)} ريال</b>`;
-    document.getElementById("i_result").style.display = "block";
-    checkTotals();
-}
-
-// 4. حساب الجوال
-function calcMobile() {
-    let cost = Number(document.getElementById("m_cost").value);
-    if(!cost || cost <= 0){ alert("أدخل قيمة الباقة"); return; }
-    let vat = cost * 0.15;
-    totals.mobile = cost + vat;
-    calculated.mobile = true;
-
-    document.getElementById("m_result").innerHTML = `
-    <b>قيمة الباقة:</b> ${cost.toFixed(2)} ريال<br>
-    <b>الضريبة (15%):</b> ${vat.toFixed(2)} ريال<br>
-    <hr><b style="color:#0f766e; font-size:18px;">إجمالي الجوال: ${totals.mobile.toFixed(2)} ريال</b>`;
-    document.getElementById("m_result").style.display = "block";
-    checkTotals();
-}
-
 // حساب الإجمالي الكلي
 function calcGrandTotal() {
-    let grandTotal = totals.elec + totals.water + totals.internet + totals.mobile;
+    let grandTotal = totals.elec + totals.water;
     document.getElementById("grandTotalValue").textContent = grandTotal.toFixed(2) + " ريال";
     document.getElementById("grandTotalResult").style.display = "block";
 }
