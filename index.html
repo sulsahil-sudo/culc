@@ -9,12 +9,10 @@ body { font-family: Tahoma, Arial; background: #f4f7fb; padding: 15px; margin: 0
 .card { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 3px 15px rgba(0,0,0,.1); }
 h2 { text-align: center; color: #0f766e; margin-bottom: 20px; }
 
-/* أزرار التبويب */
 .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
 .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; background: #e2e8f0; color: #333; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
 .tab-btn.active { background: #0f766e; color: white; }
 
-/* محتوى التبويبات */
 .tab-content { display: none; }
 .tab-content.active { display: block; animation: fadeIn 0.3s; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -36,7 +34,6 @@ input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px
 <div class="card">
 <h2>⚡️💧 حاسبة الفواتير</h2>
 
-<!-- الأزرار -->
 <div class="tabs">
     <button class="tab-btn active" onclick="openTab('elec')" id="btn-elec">⚡️ الكهرباء</button>
     <button class="tab-btn" onclick="openTab('water')" id="btn-water">💧 الماء</button>
@@ -44,15 +41,19 @@ input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px
 
 <!-- تبويب الكهرباء -->
 <div id="elec" class="tab-content active">
+    
+    <label>نوع القطاع (التعريفة)</label>
+    <select id="e_sector" onchange="updateBreakerOptions()">
+      <option value="residential">سكني (منازل)</option>
+      <option value="commercial">تجاري / تعليمي / صحي أهلي</option>
+    </select>
+
     <label>الاستهلاك الشهري للكهرباء (ك.و.س)</label>
     <input type="number" id="e_usage" placeholder="مثال: 3500">
     
     <label>سعة القاطع (الكهرباء)</label>
     <select id="e_breaker">
-      <option value="70">20 - أقل من 100 أمبير (70 ريال)</option>
-      <option value="80">100 - أقل من 200 أمبير (80 ريال)</option>
-      <option value="90">200 - أقل من 300 أمبير (90 ريال)</option>
-      <option value="100">300 أمبير فأكثر (100 ريال)</option>
+      <!-- سيتم تعبئتها تلقائياً حسب القطاع -->
     </select>
 
     <label>مبلغ فاتورة الكهرباء للشهر الماضي (اختياري)</label>
@@ -94,7 +95,33 @@ input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px
 </div>
 
 <script>
-// دالة التبديل بين التبويبات
+// 1. تحديث خيارات القاطع بناءً على القطاع
+function updateBreakerOptions() {
+    let sector = document.getElementById("e_sector").value;
+    let breakerSelect = document.getElementById("e_breaker");
+    
+    if (sector === "residential") {
+        breakerSelect.innerHTML = `
+            <option value="70">20 - أقل من 100 أمبير (70 ريال)</option>
+            <option value="80">100 - أقل من 200 أمبير (80 ريال)</option>
+            <option value="90">200 - أقل من 300 أمبير (90 ريال)</option>
+            <option value="100">300 أمبير فأكثر (100 ريال)</option>
+        `;
+    } else {
+        breakerSelect.innerHTML = `
+            <option value="350">20 - أقل من 100 أمبير (350 ريال)</option>
+            <option value="500">100 - أقل من 200 أمبير (500 ريال)</option>
+            <option value="700">200 - أقل من 300 أمبير (700 ريال)</option>
+            <option value="900">300 أمبير فأكثر (900 ريال)</option>
+        `;
+    }
+}
+
+// تشغيل الدالة عند فتح الصفحة
+window.onload = function() {
+    updateBreakerOptions();
+};
+
 function openTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -102,22 +129,36 @@ function openTab(tabName) {
     document.getElementById('btn-' + tabName).classList.add('active');
 }
 
-// 1. حساب الكهرباء
+// 2. حساب الكهرباء
 function calcElec() {
+    let sector = document.getElementById("e_sector").value;
     let usage = Number(document.getElementById("e_usage").value);
     let fixed = Number(document.getElementById("e_breaker").value);
     let oldBill = Number(document.getElementById("e_oldBill").value);
 
     if(!usage || usage <= 0){ alert("الرجاء إدخال استهلاك الكهرباء"); return; }
 
+    let rate1, rate2;
+    if (sector === "residential") {
+        rate1 = 0.21; // 21 هللة
+        rate2 = 0.33; // 33 هللة
+    } else {
+        rate1 = 0.25; // 25 هللة
+        rate2 = 0.35; // 35 هللة
+    }
+
     let tier1 = Math.min(usage, 6000);
     let tier2 = Math.max(usage - 6000, 0);
-    let energyCost = (tier1 * 0.21) + (tier2 * 0.33);
+    let energyCost = (tier1 * rate1) + (tier2 * rate2);
+    
     let subtotal = energyCost + fixed;
     let vat = subtotal * 0.15;
     let total = subtotal + vat;
 
+    let sectorName = sector === "residential" ? "سكني" : "تجاري/تعليمي";
+
     let html = `
+    <b>نوع التعريفة:</b> ${sectorName}<br>
     <b>رسوم الاستهلاك:</b> ${energyCost.toFixed(2)} ريال<br>
     <b>الرسوم الثابتة:</b> ${fixed.toFixed(2)} ريال<br>
     <b>الضريبة (15%):</b> ${vat.toFixed(2)} ريال<br>
@@ -140,22 +181,20 @@ function calcElec() {
     document.getElementById("e_result").style.display = "block";
 }
 
-// 2. حساب الماء
+// 3. حساب الماء
 function calcWater() {
     let usage = Number(document.getElementById("w_usage").value) || 0;
     let meter = Number(document.getElementById("w_meter").value);
     let oldBill = Number(document.getElementById("w_oldBill").value);
 
-    // شرائح الماء
     let t1 = Math.min(usage, 15);
     let t2 = Math.max(Math.min(usage - 15, 15), 0);
     let t3 = Math.max(Math.min(usage - 30, 15), 0);
     let t4 = Math.max(usage - 45, 0);
     
     let waterCost = (t1 * 1) + (t2 * 2) + (t3 * 4) + (t4 * 6);
-    let sewageCost = waterCost * 0.5; // الصرف الصحي 50% من قيمة الماء
+    let sewageCost = waterCost * 0.5;
     
-    // رسوم ثابتة (ماء + صرف)
     let fixed = 0;
     if(meter == 20) fixed = 20 + 10;
     else if(meter == 40) fixed = 40 + 20;
@@ -191,7 +230,6 @@ function calcWater() {
     document.getElementById("w_result").style.display = "block";
 }
 
-// دالة رسم الأعمدة
 function drawChart(oldId, newId, chartId, oldVal, newVal){
     document.getElementById(chartId).style.display="flex";
     let max = Math.max(oldVal, newVal);
