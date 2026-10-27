@@ -9,19 +9,41 @@ body { font-family: Tahoma, Arial; background: #f4f7fb; padding: 15px; margin: 0
 .card { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 3px 15px rgba(0,0,0,.1); }
 h2 { text-align: center; color: #0f766e; margin-bottom: 20px; }
 
-/* تنسيق قسم المجموع الكلي (فوق) */
-.total-section { 
-    margin-bottom: 20px; 
+/* تنسيق زر الإجمالي في الأعلى */
+.total-section { margin-bottom: 20px; }
+.btn-total { 
+    width: 100%; 
+    padding: 15px; 
+    font-size: 18px; 
+    font-weight: bold; 
+    border: none; 
+    border-radius: 8px; 
+    background: #94a3b8; /* لون رمادي شفاف */
+    color: white; 
+    cursor: not-allowed; /* منع الضغط */
+    opacity: 0.6; 
+    transition: 0.3s; 
+}
+.btn-total.active { 
+    background: #2563eb; /* لون أزرق نشط */
+    cursor: pointer; 
+    opacity: 1; 
+    box-shadow: 0 4px 10px rgba(37,99,235,0.3);
+}
+.btn-total.active:hover { background: #1d4ed8; }
+
+.total-result { 
+    margin-top: 10px; 
     padding: 15px; 
     background: #dcfce7; 
     border-radius: 10px; 
     text-align: center; 
-    border: 2px dashed #86efac; 
+    border: 1px solid #86efac; 
     display: none; 
 }
-.total-section span { font-size: 22px; font-weight: bold; color: #166534; }
-.total-section .total-title { font-size: 16px; color: #166534; margin-bottom: 5px; font-weight: bold; }
+.total-result span { font-size: 22px; font-weight: bold; color: #166534; }
 
+/* باقي التنسيقات */
 .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
 .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; background: #e2e8f0; color: #333; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
 .tab-btn.active { background: #0f766e; color: white; }
@@ -47,10 +69,15 @@ input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px
 <div class="card">
 <h2>⚡️💧 حاسبة الفواتير</h2>
 
-<!-- قسم الإجمالي الكلي (يظهر في الأعلى بعد حساب الخدمتين) -->
-<div id="totalSection" class="total-section">
-    <div class="total-title">📊 إجمالي فاتورة الكهرباء والماء:</div>
-    <span id="grandTotalValue">0.00 ريال</span>
+<!-- زر الإجمالي الشفاف في الأعلى -->
+<div class="total-section">
+    <button id="btnGrandTotal" class="btn-total" onclick="calcGrandTotal()" disabled>
+        📊 احسب إجمالي الفاتورتين
+    </button>
+    <div id="grandTotalResult" class="total-result">
+        إجمالي الكهرباء والماء:<br>
+        <span id="grandTotalValue">0.00 ريال</span>
+    </div>
 </div>
 
 <div class="tabs">
@@ -114,7 +141,6 @@ input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px
 </div>
 
 <script>
-// متغيرات لحفظ آخر نتيجة تم حسابها
 let lastElecTotal = 0;
 let lastWaterTotal = 0;
 let elecCalculated = false;
@@ -203,7 +229,7 @@ function calcElec() {
 
     document.getElementById("e_result").innerHTML = html;
     document.getElementById("e_result").style.display = "block";
-    updateGrandTotal();
+    checkTotals();
 }
 
 function calcWater() {
@@ -257,22 +283,22 @@ function calcWater() {
 
     document.getElementById("w_result").innerHTML = html;
     document.getElementById("w_result").style.display = "block";
-    updateGrandTotal();
+    checkTotals();
 }
 
-// دالة تحديث الإجمالي في الأعلى تلقائياً
-function updateGrandTotal() {
+// تفعيل الزر فقط إذا تم حساب الخدمتين
+function checkTotals() {
+    let btn = document.getElementById("btnGrandTotal");
     if (elecCalculated && waterCalculated) {
-        let total = lastElecTotal + lastWaterTotal;
-        document.getElementById("grandTotalValue").textContent = total.toFixed(2) + " ريال";
-        document.getElementById("totalSection").style.display = "block";
-    } else if (elecCalculated) {
-        document.getElementById("grandTotalValue").textContent = lastElecTotal.toFixed(2) + " ريال (كهرباء فقط)";
-        document.getElementById("totalSection").style.display = "block";
-    } else if (waterCalculated) {
-        document.getElementById("grandTotalValue").textContent = lastWaterTotal.toFixed(2) + " ريال (ماء فقط)";
-        document.getElementById("totalSection").style.display = "block";
+        btn.disabled = false;
+        btn.classList.add("active");
     }
+}
+
+function calcGrandTotal() {
+    let total = lastElecTotal + lastWaterTotal;
+    document.getElementById("grandTotalValue").textContent = total.toFixed(2) + " ريال";
+    document.getElementById("grandTotalResult").style.display = "block";
 }
 
 function drawChart(oldId, newId, chartId, oldVal, newVal){
