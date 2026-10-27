@@ -98,9 +98,8 @@ input.input-error { border: 2px solid #ef4444 !important; background-color: #fef
       <option value="government">حكومي (سعر موحد)</option>
     </select>
     
-    <label>استهلاك الماء (متر مكعب)</label>
-    <input type="number" id="w_usage" placeholder="مثال: 25" oninput="clearError('w_usage', 'w_error'); resetOnChange('w')">
-    <div id="w_error" class="error-msg">الرجاء إدخال استهلاك الماء أولاً!</div>
+    <label>استهلاك الماء (متر مكعب) - اختياري</label>
+    <input type="number" id="w_usage" placeholder="إذا تركته فارغاً يُحسب صفر" oninput="resetOnChange('w')">
     
     <label>قطر عداد الماء</label>
     <select id="w_meter" onchange="resetOnChange('w')"></select>
@@ -126,7 +125,7 @@ function showError(inputId, errorId) {
     let input = document.getElementById(inputId);
     input.classList.add("input-error");
     document.getElementById(errorId).style.display = "block";
-    input.focus(); // توجيه المؤشر للحقل
+    input.focus();
 }
 
 function updateElecBreaker() {
@@ -176,6 +175,7 @@ function resetOnChange(type) {
 
 function checkTotals() {
     let btn = document.getElementById("btnGrandTotal");
+    // الزر ينشط فقط إذا تم حساب الكهرباء والماء (الماء يعتبر محسوباً حتى لو صفر)
     if (calculated.elec && calculated.water) {
         btn.disabled = false;
         btn.classList.add("active");
@@ -185,12 +185,12 @@ function checkTotals() {
     }
 }
 
-// 1. حساب الكهرباء
+// 1. حساب الكهرباء (إجباري)
 function calcElec() {
     let usage = Number(document.getElementById("e_usage").value);
     let fixed = Number(document.getElementById("e_breaker").value);
     
-    // التحقق من إدخال الاستهلاك
+    // التحقق من إدخال الاستهلاك (إجباري)
     if(!usage || usage <= 0){ 
         showError('e_usage', 'e_error'); 
         return; 
@@ -217,17 +217,11 @@ function calcElec() {
     checkTotals();
 }
 
-// 2. حساب الماء
+// 2. حساب الماء (اختياري - صفر إذا كان فارغاً)
 function calcWater() {
-    let usage = Number(document.getElementById("w_usage").value);
+    let usage = Number(document.getElementById("w_usage").value) || 0; // إذا كان فارغاً يعتبر صفر
     let fixed = Number(document.getElementById("w_meter").value);
     let sector = document.getElementById("w_sector").value;
-
-    // التحقق من إدخال الاستهلاك
-    if(!usage || usage <= 0){ 
-        showError('w_usage', 'w_error'); 
-        return; 
-    }
 
     let waterCost = 0, sewageCost = 0;
     if (sector === "residential") {
