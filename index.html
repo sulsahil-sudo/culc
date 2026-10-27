@@ -95,7 +95,7 @@ button:hover{
   <option value="100">300 أمبير فأكثر (100 ريال)</option>
 </select>
 
-<label>فاتورتك السابقه (اختياري للمقارنة)</label>
+<label>فاتورتك مبلغ فاتورة الشهر الماضي (اختياري للمقارنة)</label>
 <input type="number" id="oldBill" placeholder="مثال: 1000">
 
 <button onclick="calculate()">احسب</button>
@@ -107,7 +107,7 @@ button:hover{
 <div id="chart" class="chart" style="display:none">
     <div class="bar-wrap">
         <div id="oldBar" class="bar old"></div>
-        <div>السابقه</div>
+        <div>مبلغ فاتورة الشهر الماضي</div>
     </div>
 
     <div class="bar-wrap">
@@ -156,7 +156,7 @@ function calculate() {
 
         html += `
         <hr>
-        <b>الفاتورة السابقه:</b> ${oldBill.toFixed(2)} ريال<br>
+        <b>الفاتورة مبلغ فاتورة الشهر الماضي:</b> ${oldBill.toFixed(2)} ريال<br>
         <b>الفرق:</b> ${diff.toFixed(2)} ريال<br>
         <b>نسبة التغير:</b> ${pct.toFixed(2)}%
         `;
