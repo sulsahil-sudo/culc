@@ -43,7 +43,7 @@ input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px
 <div id="elec" class="tab-content active">
     
     <label>نوع القطاع (التعريفة)</label>
-    <select id="e_sector" onchange="updateBreakerOptions()">
+    <select id="e_sector" onchange="updateElecBreaker()">
       <option value="residential">سكني</option>
       <option value="commercial">تجاري / تعليمي / صحي أهلي</option>
       <option value="industrial">صناعي</option>
@@ -54,9 +54,7 @@ input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px
     <input type="number" id="e_usage" placeholder="مثال: 3500">
     
     <label>سعة القاطع (الكهرباء)</label>
-    <select id="e_breaker">
-      <!-- سيتم تعبئتها تلقائياً حسب القطاع -->
-    </select>
+    <select id="e_breaker"></select>
 
     <label>مبلغ فاتورة الكهرباء للشهر الماضي (اختياري)</label>
     <input type="number" id="e_oldBill" placeholder="مثال: 500">
@@ -71,17 +69,19 @@ input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px
 
 <!-- تبويب الماء -->
 <div id="water" class="tab-content">
+    
+    <label>نوع القطاع (تعريفة الماء)</label>
+    <select id="w_sector" onchange="updateWaterMeter()">
+      <option value="residential">سكني (شرائح)</option>
+      <option value="commercial">تجاري / صناعي (سعر موحد)</option>
+      <option value="government">حكومي (سعر موحد)</option>
+    </select>
+
     <label>استهلاك الماء (متر مكعب)</label>
     <input type="number" id="w_usage" placeholder="مثال: 25">
     
     <label>قطر عداد الماء</label>
-    <select id="w_meter">
-      <option value="20">20 ملم أو أقل (رسوم ثابتة 30 ريال)</option>
-      <option value="40">21 - 40 ملم (رسوم ثابتة 60 ريال)</option>
-      <option value="60">41 - 65 ملم (رسوم ثابتة 90 ريال)</option>
-      <option value="80">66 - 100 ملم (رسوم ثابتة 120 ريال)</option>
-      <option value="100">أكثر من 100 ملم (رسوم ثابتة 150 ريال)</option>
-    </select>
+    <select id="w_meter"></select>
 
     <label>مبلغ فاتورة الماء للشهر الماضي (اختياري)</label>
     <input type="number" id="w_oldBill" placeholder="مثال: 150">
@@ -97,41 +97,36 @@ input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px
 </div>
 
 <script>
-// 1. تحديث خيارات القاطع بناءً على القطاع
-function updateBreakerOptions() {
+// --- دوال التحديث الديناميكي للقوائم ---
+function updateElecBreaker() {
     let sector = document.getElementById("e_sector").value;
-    let breakerSelect = document.getElementById("e_breaker");
-    
+    let bSelect = document.getElementById("e_breaker");
     if (sector === "residential") {
-        breakerSelect.innerHTML = `
-            <option value="70">20 - أقل من 100 أمبير (70 ريال)</option>
-            <option value="80">100 - أقل من 200 أمبير (80 ريال)</option>
-            <option value="90">200 - أقل من 300 أمبير (90 ريال)</option>
-            <option value="100">300 أمبير فأكثر (100 ريال)</option>
-        `;
+        bSelect.innerHTML = `<option value="70">20 - أقل من 100 أمبير (70 ريال)</option><option value="80">100 - أقل من 200 أمبير (80 ريال)</option><option value="90">200 - أقل من 300 أمبير (90 ريال)</option><option value="100">300 أمبير فأكثر (100 ريال)</option>`;
     } else if (sector === "commercial") {
-        breakerSelect.innerHTML = `
-            <option value="350">20 - أقل من 100 أمبير (350 ريال)</option>
-            <option value="500">100 - أقل من 200 أمبير (500 ريال)</option>
-            <option value="700">200 - أقل من 300 أمبير (700 ريال)</option>
-            <option value="900">300 أمبير فأكثر (900 ريال)</option>
-        `;
+        bSelect.innerHTML = `<option value="350">20 - أقل من 100 أمبير (350 ريال)</option><option value="500">100 - أقل من 200 أمبير (500 ريال)</option><option value="700">200 - أقل من 300 أمبير (700 ريال)</option><option value="900">300 أمبير فأكثر (900 ريال)</option>`;
     } else if (sector === "industrial") {
-        breakerSelect.innerHTML = `
-            <option value="150">رسوم ثابتة صناعية (150 ريال)</option>
-            <option value="300">رسوم ثابتة صناعية (300 ريال)</option>
-        `;
+        bSelect.innerHTML = `<option value="150">رسوم ثابتة صناعية (150 ريال)</option><option value="300">رسوم ثابتة صناعية (300 ريال)</option>`;
     } else if (sector === "government") {
-        breakerSelect.innerHTML = `
-            <option value="400">رسوم ثابتة حكومية (400 ريال)</option>
-            <option value="600">رسوم ثابتة حكومية (600 ريال)</option>
-        `;
+        bSelect.innerHTML = `<option value="400">رسوم ثابتة حكومية (400 ريال)</option><option value="600">رسوم ثابتة حكومية (600 ريال)</option>`;
     }
 }
 
-// تشغيل الدالة عند فتح الصفحة
+function updateWaterMeter() {
+    let sector = document.getElementById("w_sector").value;
+    let mSelect = document.getElementById("w_meter");
+    if (sector === "residential") {
+        mSelect.innerHTML = `<option value="20">20 ملم أو أقل (ثابت 30 ريال)</option><option value="40">21 - 40 ملم (ثابت 60 ريال)</option><option value="60">41 - 65 ملم (ثابت 90 ريال)</option><option value="80">66 - 100 ملم (ثابت 120 ريال)</option>`;
+    } else if (sector === "commercial") {
+        mSelect.innerHTML = `<option value="40">20 - 40 ملم (ثابت 60 ريال)</option><option value="60">41 - 65 ملم (ثابت 90 ريال)</option><option value="80">66 - 100 ملم (ثابت 120 ريال)</option><option value="100">أكثر من 100 ملم (ثابت 225 ريال)</option>`;
+    } else if (sector === "government") {
+        mSelect.innerHTML = `<option value="1000">حكومي (ثابت 1500 ريال)</option>`;
+    }
+}
+
 window.onload = function() {
-    updateBreakerOptions();
+    updateElecBreaker();
+    updateWaterMeter();
 };
 
 function openTab(tabName) {
@@ -141,7 +136,7 @@ function openTab(tabName) {
     document.getElementById('btn-' + tabName).classList.add('active');
 }
 
-// 2. حساب الكهرباء
+// --- حساب الكهرباء ---
 function calcElec() {
     let sector = document.getElementById("e_sector").value;
     let usage = Number(document.getElementById("e_usage").value);
@@ -150,36 +145,22 @@ function calcElec() {
 
     if(!usage || usage <= 0){ alert("الرجاء إدخال استهلاك الكهرباء"); return; }
 
-    let rate1, rate2, energyCost;
-    
+    let energyCost;
     if (sector === "residential") {
-        rate1 = 0.21; rate2 = 0.33;
-        let tier1 = Math.min(usage, 6000);
-        let tier2 = Math.max(usage - 6000, 0);
-        energyCost = (tier1 * rate1) + (tier2 * rate2);
+        energyCost = (Math.min(usage, 6000) * 0.21) + (Math.max(usage - 6000, 0) * 0.33);
     } else if (sector === "commercial") {
-        rate1 = 0.25; rate2 = 0.35;
-        let tier1 = Math.min(usage, 6000);
-        let tier2 = Math.max(usage - 6000, 0);
-        energyCost = (tier1 * rate1) + (tier2 * rate2);
+        energyCost = (Math.min(usage, 6000) * 0.25) + (Math.max(usage - 6000, 0) * 0.35);
     } else if (sector === "industrial") {
-        energyCost = usage * 0.23; // سعر موحد
+        energyCost = usage * 0.23;
     } else if (sector === "government") {
-        energyCost = usage * 0.35; // سعر موحد
+        energyCost = usage * 0.35;
     }
     
     let subtotal = energyCost + fixed;
     let vat = subtotal * 0.15;
     let total = subtotal + vat;
 
-    let sectorName = "";
-    if(sector === "residential") sectorName = "سكني";
-    else if(sector === "commercial") sectorName = "تجاري / تعليمي / صحي";
-    else if(sector === "industrial") sectorName = "صناعي";
-    else if(sector === "government") sectorName = "حكومي";
-
     let html = `
-    <b>نوع التعريفة:</b> ${sectorName}<br>
     <b>رسوم الاستهلاك:</b> ${energyCost.toFixed(2)} ريال<br>
     <b>الرسوم الثابتة:</b> ${fixed.toFixed(2)} ريال<br>
     <b>الضريبة (15%):</b> ${vat.toFixed(2)} ريال<br>
@@ -202,34 +183,41 @@ function calcElec() {
     document.getElementById("e_result").style.display = "block";
 }
 
-// 3. حساب الماء
+// --- حساب الماء ---
 function calcWater() {
+    let sector = document.getElementById("w_sector").value;
     let usage = Number(document.getElementById("w_usage").value) || 0;
-    let meter = Number(document.getElementById("w_meter").value);
+    let fixed = Number(document.getElementById("w_meter").value);
     let oldBill = Number(document.getElementById("w_oldBill").value);
 
-    let t1 = Math.min(usage, 15);
-    let t2 = Math.max(Math.min(usage - 15, 15), 0);
-    let t3 = Math.max(Math.min(usage - 30, 15), 0);
-    let t4 = Math.max(usage - 45, 0);
-    
-    let waterCost = (t1 * 1) + (t2 * 2) + (t3 * 4) + (t4 * 6);
-    let sewageCost = waterCost * 0.5;
-    
-    let fixed = 0;
-    if(meter == 20) fixed = 20 + 10;
-    else if(meter == 40) fixed = 40 + 20;
-    else if(meter == 60) fixed = 60 + 30;
-    else if(meter == 80) fixed = 80 + 40;
-    else fixed = 100 + 50;
+    let waterCost = 0;
+    let sewageCost = 0;
+
+    if (sector === "residential") {
+        // شرائح السكني
+        let t1 = Math.min(usage, 15);
+        let t2 = Math.max(Math.min(usage - 15, 15), 0);
+        let t3 = Math.max(Math.min(usage - 30, 15), 0);
+        let t4 = Math.max(usage - 45, 0);
+        waterCost = (t1 * 1) + (t2 * 2) + (t3 * 4) + (t4 * 6);
+        sewageCost = waterCost * 0.5; // 50%
+    } else if (sector === "commercial") {
+        // تجاري موحد (8 + 4 صرف)
+        waterCost = usage * 8;
+        sewageCost = usage * 4;
+    } else if (sector === "government") {
+        // حكومي موحد (10 + 5 صرف)
+        waterCost = usage * 10;
+        sewageCost = usage * 5;
+    }
 
     let subtotal = waterCost + sewageCost + fixed;
     let vat = subtotal * 0.15;
     let total = subtotal + vat;
 
     let html = `
-    <b>استهلاك الماء:</b> ${waterCost.toFixed(2)} ريال<br>
-    <b>الصرف الصحي (50%):</b> ${sewageCost.toFixed(2)} ريال<br>
+    <b>قيمة استهلاك الماء:</b> ${waterCost.toFixed(2)} ريال<br>
+    <b>قيمة الصرف الصحي:</b> ${sewageCost.toFixed(2)} ريال<br>
     <b>الرسوم الثابتة:</b> ${fixed.toFixed(2)} ريال<br>
     <b>الضريبة (15%):</b> ${vat.toFixed(2)} ريال<br>
     <hr style="border:1px solid #ddd;">
