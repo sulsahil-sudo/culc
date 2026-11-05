@@ -7,7 +7,23 @@
 <style>
 body { font-family: Tahoma, Arial; background: #f4f7fb; padding: 15px; margin: 0; }
 .card { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 3px 15px rgba(0,0,0,.1); }
-h2 { text-align: center; color: #0f766e; margin-bottom: 20px; }
+h2 { text-align: center; color: #0f766e; margin-bottom: 5px; }
+
+/* تنسيق اسمك */
+.owner-name {
+    text-align: center; 
+    color: #0f766e; 
+    font-weight: bold; 
+    font-size: 16px; 
+    margin-bottom: 20px; 
+    background: #e0f2fe; 
+    padding: 8px; 
+    border-radius: 8px;
+    display: inline-block;
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px dashed #0f766e;
+}
 
 /* زر الإجمالي */
 .total-section { margin-bottom: 20px; }
@@ -50,6 +66,9 @@ input.input-error { border: 2px solid #ef4444 !important; background-color: #ffe
 
 <div class="card">
 <h2>⚡️💧 حاسبة الكهرباء والماء</h2>
+
+<!-- هنا تكتب اسمك -->
+<div class="owner-name" إعداد: سليمان صالح الصهيل</div>
 
 <!-- تقرير الإجمالي الشامل -->
 <div class="total-section">
@@ -116,7 +135,6 @@ input.input-error { border: 2px solid #ef4444 !important; background-color: #ffe
 </div>
 
 <script>
-// تخزين الأرقام لحساب الإجمالي لاحقاً
 let totals = { 
     elec: { old: 0, new: 0 }, 
     water: { old: 0, new: 0 } 
@@ -220,7 +238,6 @@ function calcElec() {
     <hr><b style="color:#0f766e; font-size:18px;">إجمالي الكهرباء (جديد): ${totals.elec.new.toFixed(2)} ريال</b>`;
     resultDiv.style.display = "block";
     
-    // تقرير المقارنة للكهرباء
     let compareDiv = document.getElementById("e_compare");
     if (sector === "residential") {
         let oldEnergyCost = (Math.min(usage, 6000) * 0.18) + (Math.max(usage - 6000, 0) * 0.30);
@@ -241,7 +258,7 @@ function calcElec() {
         • نسبة التغير: <b>${pct.toFixed(1)}%</b>`;
         compareDiv.style.display = "block";
     } else {
-        totals.elec.old = totals.elec.new; // في التجاري ما فيه مقارنة
+        totals.elec.old = totals.elec.new; 
         compareDiv.style.display = "none";
     }
     
@@ -309,9 +326,7 @@ function calcWater() {
 }
 
 function calcGrandTotal() {
-    // حساب الإجمالي القديم
     let oldGrand = totals.elec.old + totals.water.old;
-    // حساب الإجمالي الجديد
     let newGrand = totals.elec.new + totals.water.new;
     
     let diff = Math.abs(newGrand - oldGrand);
