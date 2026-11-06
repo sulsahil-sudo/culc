@@ -12,40 +12,86 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
-body { font-family: Tahoma, Arial; background: #f4f7fb; padding: 15px; margin: 0; }
-.card { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 3px 15px rgba(0,0,0,.1); }
+/* الألوان الافتراضية (الوضع النهاري) */
+:root {
+    --bg-body: #f4f7fb;
+    --bg-card: #ffffff;
+    --bg-input: #ffffff;
+    --text-main: #333333;
+    --text-muted: #475569;
+    --border-color: #cccccc;
+    --bg-tab: #e2e8f0;
+    --text-tab: #333333;
+    --bg-result: #f8fafc;
+    --border-result: #e2e8f0;
+}
+
+/* ألوان الوضع الليلي */
+[data-theme="dark"] {
+    --bg-body: #121212;
+    --bg-card: #1e1e1e;
+    --bg-input: #2d2d2d;
+    --text-main: #e0e0e0;
+    --text-muted: #a0a0a0;
+    --border-color: #444444;
+    --bg-tab: #2d2d2d;
+    --text-tab: #e0e0e0;
+    --bg-result: #2d2d2d;
+    --border-result: #444444;
+}
+
+body { font-family: Tahoma, Arial; background: var(--bg-body); padding: 15px; margin: 0; transition: background 0.3s, color 0.3s; }
+.card { max-width: 600px; margin: auto; background: var(--bg-card); padding: 20px; border-radius: 15px; box-shadow: 0 3px 15px rgba(0,0,0,.1); transition: background 0.3s; position: relative; }
 h2 { text-align: center; color: #0f766e; margin-bottom: 10px; }
+[data-theme="dark"] h2 { color: #38ef7d; }
 
-/* تنسيق شريط التاريخ والوقت (معدل عشان يكون بسطر واحد) */
-.datetime-bar { text-align: center; background: #f8fafc; border: 1px solid #cbd5e1; padding: 8px; border-radius: 8px; font-size: 12px; color: #475569; margin-bottom: 10px; font-weight: bold; display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 5px; flex-wrap: wrap; }
+/* زر الوضع الليلي */
+.theme-toggle {
+    position: absolute; top: 15px; left: 15px;
+    background: var(--bg-tab); border: 1px solid var(--border-color);
+    color: var(--text-main); font-size: 20px;
+    width: 40px; height: 40px; border-radius: 50%;
+    cursor: pointer; display: flex; justify-content: center; align-items: center;
+    transition: 0.3s;
+}
+.theme-toggle:hover { background: var(--border-color); }
 
-.owner-name { text-align: center; color: #0f766e; font-weight: bold; margin-bottom: 20px; background: #e0f2fe; padding: 8px; border-radius: 8px; border: 1px dashed #0f766e; }
+.datetime-bar { text-align: center; background: var(--bg-result); border: 1px solid var(--border-color); padding: 8px; border-radius: 8px; font-size: 12px; color: var(--text-muted); margin-bottom: 10px; font-weight: bold; display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 5px; flex-wrap: wrap; transition: 0.3s; }
+.owner-name { text-align: center; color: #0f766e; font-weight: bold; margin-bottom: 20px; background: #e0f2fe; padding: 8px; border-radius: 8px; border: 1px dashed #0f766e; transition: 0.3s; }
+[data-theme="dark"] .owner-name { background: #0f2e3a; border-color: #38ef7d; color: #38ef7d; }
 
 .total-section { margin-bottom: 20px; }
 .btn-total { width: 100%; padding: 15px; font-size: 18px; font-weight: bold; border: none; border-radius: 8px; background: #94a3b8; color: white; cursor: not-allowed; opacity: 0.6; transition: 0.3s; }
 .btn-total.active { background: #2563eb; cursor: pointer; opacity: 1; box-shadow: 0 4px 10px rgba(37,99,235,0.3); }
 .btn-total.active:hover { background: #1d4ed8; }
-.total-result { margin-top: 10px; padding: 20px; background: #f0fdf4; border-radius: 10px; text-align: right; border: 2px solid #86efac; display: none; line-height: 1.8; font-size: 15px;}
+.total-result { margin-top: 10px; padding: 20px; background: #f0fdf4; border-radius: 10px; text-align: right; border: 2px solid #86efac; display: none; line-height: 1.8; font-size: 15px; color: #333; transition: 0.3s;}
 .total-result h3 { margin: 0 0 10px 0; color: #166534; text-align: center; border-bottom: 1px solid #bbf7d0; padding-bottom: 10px;}
 .total-result .row { display: flex; justify-content: space-between; margin-bottom: 5px; }
 .total-result .highlight { font-weight: bold; font-size: 18px; color: #15803d; margin-top: 10px; border-top: 1px dashed #86efac; padding-top: 10px; }
 
 .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-.tab-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; background: #e2e8f0; color: #333; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-.tab-btn.active { background: #0f766e; color: white; }
+.tab-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; background: var(--bg-tab); color: var(--text-tab); font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; border: 1px solid var(--border-color); }
+.tab-btn.active { background: #0f766e; color: white; border-color: #0f766e; }
+[data-theme="dark"] .tab-btn.active { background: #38ef7d; color: #121212; border-color: #38ef7d; }
+
 .tab-content { display: none; }
 .tab-content.active { display: block; animation: fadeIn 0.3s; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-label { display: block; margin-top: 15px; font-weight: bold; color: #333; }
-input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; transition: 0.3s; }
+label { display: block; margin-top: 15px; font-weight: bold; color: var(--text-main); }
+input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; font-size: 16px; transition: 0.3s; background: var(--bg-input); color: var(--text-main); }
 
 input.input-error { border: 2px solid #ef4444 !important; background-color: #ffe4e6 !important; }
 .error-msg { color: #dc2626; font-size: 14px; margin-top: 5px; display: none; font-weight: bold; }
 
 .btn-calc { background: #0f766e; color: white; border: none; cursor: pointer; margin-top: 20px; font-size: 18px; font-weight: bold; }
 .btn-calc:hover { background: #115e59; }
-.result { margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 10px; display: none; line-height: 1.8; border: 1px solid #e2e8f0; }
+[data-theme="dark"] .btn-calc { background: #38ef7d; color: #121212; }
+[data-theme="dark"] .btn-calc:hover { background: #11998e; color: white; }
+
+.result { margin-top: 20px; padding: 15px; background: var(--bg-result); border-radius: 10px; display: none; line-height: 1.8; border: 1px solid var(--border-result); color: var(--text-main); transition: 0.3s; }
+.result b { color: #0f766e; }
+[data-theme="dark"] .result b { color: #38ef7d; }
 
 .report-box { margin-top: 15px; padding: 15px; background: #fff7ed; border: 1px solid #fdba74; border-radius: 8px; display: none; font-size: 15px; line-height: 1.7; color: #333; }
 .report-box b { color: #c2410c; }
@@ -54,82 +100,107 @@ input.input-error { border: 2px solid #ef4444 !important; background-color: #ffe
 <body>
 
 <div class="card">
-<h2>⚡️💧 حاسبة الكهرباء والماء</h2>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
+    
+    <h2>⚡️💧 حاسبة الكهرباء والماء</h2>
 
-<div class="datetime-bar">
-    <span id="todayDate"></span>
-    <span id="currentTime"></span>
-</div>
-
-<div class="owner-name">👤 إعداد: سليمان صالح الصهيل</div>
-
-<div class="total-section">
-    <button id="btnGrandTotal" class="btn-total" onclick="calcGrandTotal()" disabled>
-        📊 احسب المقارنة الشاملة (القديم vs الجديد)
-    </button>
-    <div id="grandTotalResult" class="total-result">
-        <h3>📑 التقرير الشامل للفاتورة</h3>
-        <div class="row"><span>إجمالي الفاتورة القديمة:</span> <span id="old_grand" style="font-weight:bold;">0.00 ريال</span></div>
-        <div class="row"><span>إجمالي الفاتورة الجديدة:</span> <span id="new_grand" style="font-weight:bold; color:#0f766e;">0.00 ريال</span></div>
-        <div class="row highlight"><span>الفرق:</span> <span id="diff_grand">0.00 ريال</span></div>
-        <div class="row" style="margin-top:5px;"><span>نسبة التغير:</span> <span id="pct_grand" style="font-weight:bold;">0%</span></div>
+    <div class="datetime-bar">
+        <span id="todayDate"></span>
+        <span id="currentTime"></span>
     </div>
-</div>
 
-<div class="tabs">
-    <button class="tab-btn active" onclick="openTab('elec')" id="btn-elec">⚡️ الكهرباء</button>
-    <button class="tab-btn" onclick="openTab('water')" id="btn-water">💧 الماء</button>
-</div>
+    <div class="owner-name">👤 إعداد: سليمان صالح </div>
 
-<div id="elec" class="tab-content active">
-    <label>الاستهلاك الشهري (ك.و.س)</label>
-    <input type="number" id="e_usage" placeholder="مثال: 500" oninput="clearError('e_usage', 'e_error'); resetOnChange('e')">
-    <div id="e_error" class="error-msg">الرجاء إدخال استهلاك الكهرباء أولاً!</div>
-    
-    <label>سعة القاطع</label>
-    <select id="e_breaker" onchange="resetOnChange('e')">
-      <option value="70">20-99 أمبير (70 ريال)</option>
-      <option value="80">100-199 أمبير (80 ريال)</option>
-      <option value="90">200-299 أمبير (90 ريال)</option>
-      <option value="100">300+ أمبير (100 ريال)</option>
-    </select>
-    
-    <button class="btn-calc" onclick="calcElec()">احسب الكهرباء</button>
-    <div id="e_result" class="result"></div>
-    <div id="e_compare" class="report-box"></div>
-</div>
+    <div class="total-section">
+        <button id="btnGrandTotal" class="btn-total" onclick="calcGrandTotal()" disabled>
+            📊 احسب المقارنة الشاملة (القديم vs الجديد)
+        </button>
+        <div id="grandTotalResult" class="total-result">
+            <h3>📑 التقرير الشامل للفاتورة</h3>
+            <div class="row"><span>إجمالي الفاتورة القديمة:</span> <span id="old_grand" style="font-weight:bold;">0.00 ريال</span></div>
+            <div class="row"><span>إجمالي الفاتورة الجديدة:</span> <span id="new_grand" style="font-weight:bold; color:#0f766e;">0.00 ريال</span></div>
+            <div class="row highlight"><span>الفرق:</span> <span id="diff_grand">0.00 ريال</span></div>
+            <div class="row" style="margin-top:5px;"><span>نسبة التغير:</span> <span id="pct_grand" style="font-weight:bold;">0%</span></div>
+        </div>
+    </div>
 
-<div id="water" class="tab-content">
-    <label>استهلاك الماء (متر مكعب) - اختياري</label>
-    <input type="number" id="w_usage" placeholder="إذا تركته فارغاً يُحسب صفر" oninput="resetOnChange('w')">
-    
-    <label>قطر عداد الماء</label>
-    <select id="w_meter" onchange="resetOnChange('w')">
-      <option value="30">20 ملم أو أقل (30 ريال)</option>
-      <option value="60">21-40 ملم (60 ريال)</option>
-      <option value="90">41-65 ملم (90 ريال)</option>
-      <option value="120">66-100 ملم (120 ريال)</option>
-    </select>
-    
-    <button class="btn-calc" onclick="calcWater()">احسب الماء</button>
-    <div id="w_result" class="result"></div>
-    <div id="w_compare" class="report-box"></div>
-</div>
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab('elec')" id="btn-elec">⚡️ الكهرباء</button>
+        <button class="tab-btn" onclick="openTab('water')" id="btn-water">💧 الماء</button>
+    </div>
+
+    <div id="elec" class="tab-content active">
+        <label>الاستهلاك الشهري (ك.و.س)</label>
+        <input type="number" id="e_usage" placeholder="مثال: 500" oninput="clearError('e_usage', 'e_error'); resetOnChange('e')">
+        <div id="e_error" class="error-msg">الرجاء إدخال استهلاك الكهرباء أولاً!</div>
+        
+        <label>سعة القاطع</label>
+        <select id="e_breaker" onchange="resetOnChange('e')">
+          <option value="70">20-99 أمبير (70 ريال)</option>
+          <option value="80">100-199 أمبير (80 ريال)</option>
+          <option value="90">200-299 أمبير (90 ريال)</option>
+          <option value="100">300+ أمبير (100 ريال)</option>
+        </select>
+        
+        <button class="btn-calc" onclick="calcElec()">احسب الكهرباء</button>
+        <div id="e_result" class="result"></div>
+        <div id="e_compare" class="report-box"></div>
+    </div>
+
+    <div id="water" class="tab-content">
+        <label>استهلاك الماء (متر مكعب) - اختياري</label>
+        <input type="number" id="w_usage" placeholder="إذا تركته فارغاً يُحسب صفر" oninput="resetOnChange('w')">
+        
+        <label>قطر عداد الماء</label>
+        <select id="w_meter" onchange="resetOnChange('w')">
+          <option value="30">20 ملم أو أقل (30 ريال)</option>
+          <option value="60">21-40 ملم (60 ريال)</option>
+          <option value="90">41-65 ملم (90 ريال)</option>
+          <option value="120">66-100 ملم (120 ريال)</option>
+        </select>
+        
+        <button class="btn-calc" onclick="calcWater()">احسب الماء</button>
+        <div id="w_result" class="result"></div>
+        <div id="w_compare" class="report-box"></div>
+    </div>
 
 </div>
 
 <script>
+// ------ كود الوضع الليلي ------
+function toggleTheme() {
+    let body = document.body;
+    let btn = document.getElementById("themeToggle");
+    if (body.getAttribute("data-theme") === "dark") {
+        body.removeAttribute("data-theme");
+        btn.textContent = "🌙";
+        localStorage.setItem("theme", "light");
+    } else {
+        body.setAttribute("data-theme", "dark");
+        btn.textContent = "☀️";
+        localStorage.setItem("theme", "dark");
+    }
+}
+
+// تذكر اختيار المستخدم عند فتح الصفحة
+window.onload = function() {
+    let savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+        document.body.setAttribute("data-theme", "dark");
+        document.getElementById("themeToggle").textContent = "☀️";
+    }
+};
+
+
+// ------ باقي أكواد الحاسبة ------
 let totals = { elec: { old: 0, new: 0 }, water: { old: 0, new: 0 } };
 let calculated = { elec: false, water: false };
 
-// دالة جلب التاريخ الهجري رياضياً بدون إنترنت
 function getHijriDate(date) {
     let day = date.getDate();
     let month = date.getMonth() + 1;
     let year = date.getFullYear();
-    
-    let m = month;
-    let y = year;
+    let m = month, y = year;
     if (m < 3) { y -= 1; m += 12; }
     let a = Math.floor(y / 100);
     let b = 2 - a + Math.floor(a / 4);
@@ -150,32 +221,20 @@ function getHijriDate(date) {
     return `${hijriDay} ${hijriMonths[hijriMonth - 1]} ${hijriYear} هـ`;
 }
 
-// دالة تحديث الوقت والتاريخ محلياً
 function updateDateTime() {
     const now = new Date();
     const days = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
-    let dayName = days[now.getDay()];
     let dateStr = now.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
-    let hijriDate = getHijriDate(now);
+    document.getElementById("todayDate").textContent = `${days[now.getDay()]} | ${getHijriDate(now)} | ${dateStr} م`;
     
-    // عرض اليوم والتاريخ
-    document.getElementById("todayDate").textContent = `${dayName} | ${hijriDate} | ${dateStr} م`;
-    
-    let hours = now.getHours();
-    let minutes = now.getMinutes();
-    let seconds = now.getSeconds();
+    let hours = now.getHours(), minutes = now.getMinutes(), seconds = now.getSeconds();
     let ampm = hours >= 12 ? 'مساءً' : 'صباحاً';
     hours = hours % 12; hours = hours ? hours : 12;
     minutes = minutes < 10 ? '0' + minutes : minutes;
     seconds = seconds < 10 ? '0' + seconds : seconds;
-    
-    // عرض الوقت
     document.getElementById("currentTime").textContent = `الوقت: ${hours}:${minutes}:${seconds} ${ampm}`;
 }
-
-// تشغيل الساعة عند فتح الصفحة
-updateDateTime();
-setInterval(updateDateTime, 1000);
+updateDateTime(); setInterval(updateDateTime, 1000);
 
 function scrollToElement(el) { if (!el) return; setTimeout(() => { window.scrollTo({top: el.getBoundingClientRect().top + window.pageYOffset - 50, behavior: 'smooth'}); }, 150); }
 function clearError(id, errId) { document.getElementById(id).classList.remove("input-error"); document.getElementById(errId).style.display = "none"; }
@@ -212,7 +271,8 @@ function calcElec() {
     <b>الاستهلاك:</b> ${energyCost.toFixed(2)} ريال<br>
     <b>الثابتة:</b> ${fixed.toFixed(2)} ريال<br>
     <b>الضريبة (15%):</b> ${vat.toFixed(2)} ريال<br>
-    <hr><b style="color:#0f766e; font-size:18px;">إجمالي الكهرباء (جديد): ${totals.elec.new.toFixed(2)} ريال</b>`;
+    <hr style="border:0; border-top:1px solid #ddd; margin:10px 0;">
+    <b style="font-size:18px;">إجمالي الكهرباء (جديد): ${totals.elec.new.toFixed(2)} ريال</b>`;
     resultDiv.style.display = "block";
     
     let compareDiv = document.getElementById("e_compare");
@@ -252,7 +312,8 @@ function calcWater() {
     <b>الماء:</b> ${waterCost.toFixed(2)} ريال<br>
     <b>الثابتة:</b> ${fixed.toFixed(2)} ريال<br>
     <b>الضريبة (15%):</b> ${vat.toFixed(2)} ريال<br>
-    <hr><b style="color:#0f766e; font-size:18px;">إجمالي الماء (جديد): ${totals.water.new.toFixed(2)} ريال</b>`;
+    <hr style="border:0; border-top:1px solid #ddd; margin:10px 0;">
+    <b style="font-size:18px;">إجمالي الماء (جديد): ${totals.water.new.toFixed(2)} ريال</b>`;
     resultDiv.style.display = "block";
     
     let compareDiv = document.getElementById("w_compare");
