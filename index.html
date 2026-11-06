@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- منع الكاش -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -17,7 +16,9 @@ body { font-family: Tahoma, Arial; background: #f4f7fb; padding: 15px; margin: 0
 .card { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 3px 15px rgba(0,0,0,.1); }
 h2 { text-align: center; color: #0f766e; margin-bottom: 10px; }
 
-.datetime-bar { text-align: center; background: #f8fafc; border: 1px solid #cbd5e1; padding: 10px; border-radius: 8px; font-size: 14px; color: #475569; margin-bottom: 10px; font-weight: bold; display: flex; flex-direction: column; gap: 5px; }
+/* تنسيق شريط التاريخ والوقت (معدل عشان يكون بسطر واحد) */
+.datetime-bar { text-align: center; background: #f8fafc; border: 1px solid #cbd5e1; padding: 8px; border-radius: 8px; font-size: 12px; color: #475569; margin-bottom: 10px; font-weight: bold; display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 5px; flex-wrap: wrap; }
+
 .owner-name { text-align: center; color: #0f766e; font-weight: bold; margin-bottom: 20px; background: #e0f2fe; padding: 8px; border-radius: 8px; border: 1px dashed #0f766e; }
 
 .total-section { margin-bottom: 20px; }
@@ -60,7 +61,7 @@ input.input-error { border: 2px solid #ef4444 !important; background-color: #ffe
     <span id="currentTime"></span>
 </div>
 
-<div class="owner-name">👤 إعداد: سليمان صالح </div>
+<div class="owner-name">👤 إعداد: سليمان صالح الصهيل</div>
 
 <div class="total-section">
     <button id="btnGrandTotal" class="btn-total" onclick="calcGrandTotal()" disabled>
@@ -121,7 +122,7 @@ input.input-error { border: 2px solid #ef4444 !important; background-color: #ffe
 let totals = { elec: { old: 0, new: 0 }, water: { old: 0, new: 0 } };
 let calculated = { elec: false, water: false };
 
-// دالة جلب التاريخ الهجري (تقويم أم القرى) رياضياً بدون إنترنت
+// دالة جلب التاريخ الهجري رياضياً بدون إنترنت
 function getHijriDate(date) {
     let day = date.getDate();
     let month = date.getMonth() + 1;
@@ -142,7 +143,6 @@ function getHijriDate(date) {
     let hijriDay = Math.floor(l - Math.floor((709 * hijriMonth) / 24) + 0.5); 
     let hijriYear = 30 * n + j - 30;
     
-    // تصحيح الفروقات البسيطة لتطابق تقويم أم القرى
     if (hijriDay === 30) { hijriDay = 1; hijriMonth += 1; if(hijriMonth > 12) { hijriMonth = 1; hijriYear += 1; } }
     else { hijriDay += 1; }
 
@@ -158,6 +158,7 @@ function updateDateTime() {
     let dateStr = now.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
     let hijriDate = getHijriDate(now);
     
+    // عرض اليوم والتاريخ
     document.getElementById("todayDate").textContent = `${dayName} | ${hijriDate} | ${dateStr} م`;
     
     let hours = now.getHours();
@@ -168,6 +169,7 @@ function updateDateTime() {
     minutes = minutes < 10 ? '0' + minutes : minutes;
     seconds = seconds < 10 ? '0' + seconds : seconds;
     
+    // عرض الوقت
     document.getElementById("currentTime").textContent = `الوقت: ${hours}:${minutes}:${seconds} ${ampm}`;
 }
 
