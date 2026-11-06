@@ -3,343 +3,135 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>حاسبة الكهرباء والماء</title>
+<title>حاسبة الكهرباء الدقيقة</title>
 <style>
 body { font-family: Tahoma, Arial; background: #f4f7fb; padding: 15px; margin: 0; }
 .card { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 3px 15px rgba(0,0,0,.1); }
-h2 { text-align: center; color: #0f766e; margin-bottom: 5px; }
+h2 { text-align: center; color: #0f766e; margin-bottom: 10px; }
 
-/* تنسيق اسمك */
-.owner-name {
-    text-align: center; 
-    color: #0f766e; 
-    font-weight: bold; 
-    font-size: 16px; 
-    margin-bottom: 20px; 
-    background: #e0f2fe; 
-    padding: 8px; 
+/* تنسيق شريط التاريخ والوقت */
+.datetime-bar {
+    text-align: center;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    padding: 8px;
     border-radius: 8px;
-    display: inline-block;
-    width: 100%;
-    box-sizing: border-box;
-    border: 1px dashed #0f766e;
+    font-size: 14px;
+    color: #475569;
+    margin-bottom: 10px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
 }
 
-/* زر الإجمالي */
-.total-section { margin-bottom: 20px; }
-.btn-total { width: 100%; padding: 15px; font-size: 18px; font-weight: bold; border: none; border-radius: 8px; background: #94a3b8; color: white; cursor: not-allowed; opacity: 0.6; transition: 0.3s; }
-.btn-total.active { background: #2563eb; cursor: pointer; opacity: 1; box-shadow: 0 4px 10px rgba(37,99,235,0.3); }
-.btn-total.active:hover { background: #1d4ed8; }
-
-/* تنسيق تقرير الإجمالي */
-.total-result { margin-top: 10px; padding: 20px; background: #f0fdf4; border-radius: 10px; text-align: right; border: 2px solid #86efac; display: none; line-height: 1.8; font-size: 15px;}
-.total-result h3 { margin: 0 0 10px 0; color: #166534; text-align: center; border-bottom: 1px solid #bbf7d0; padding-bottom: 10px;}
-.total-result .row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-.total-result .highlight { font-weight: bold; font-size: 18px; color: #15803d; margin-top: 10px; border-top: 1px dashed #86efac; padding-top: 10px; }
-
-/* التبويبات */
-.tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-.tab-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; background: #e2e8f0; color: #333; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-.tab-btn.active { background: #0f766e; color: white; }
-
-.tab-content { display: none; }
-.tab-content.active { display: block; animation: fadeIn 0.3s; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+/* تنسيق اسمك */
+.owner-name { text-align: center; color: #0f766e; font-weight: bold; margin-bottom: 20px; background: #e0f2fe; padding: 8px; border-radius: 8px; border: 1px dashed #0f766e; }
 
 label { display: block; margin-top: 15px; font-weight: bold; color: #333; }
-input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; transition: 0.3s; }
-
+input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
 input.input-error { border: 2px solid #ef4444 !important; background-color: #ffe4e6 !important; }
 .error-msg { color: #dc2626; font-size: 14px; margin-top: 5px; display: none; font-weight: bold; }
-
-.btn-calc { background: #0f766e; color: white; border: none; cursor: pointer; margin-top: 20px; font-size: 18px; font-weight: bold; transition: 0.3s; }
+.btn-calc { background: #0f766e; color: white; border: none; cursor: pointer; margin-top: 20px; font-size: 18px; font-weight: bold; }
 .btn-calc:hover { background: #115e59; }
-
 .result { margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 10px; display: none; line-height: 1.8; border: 1px solid #e2e8f0; }
-
-/* تنسيق التقرير النصي */
-.report-box { margin-top: 15px; padding: 15px; background: #fff7ed; border: 1px solid #fdba74; border-radius: 8px; display: none; font-size: 15px; line-height: 1.7; color: #333; }
-.report-box b { color: #c2410c; }
+.result b { color: #0f766e; }
 </style>
 </head>
 <body>
 
 <div class="card">
-<h2>⚡️💧 حاسبة الكهرباء والماء</h2>
+<h2>⚡️ حاسبة الكهرباء</h2>
 
-<!-- هنا تكتب اسمك -->
-<div class="owner-name">👤 إعداد: سليمان صالح </div>
-<!-- تقرير الإجمالي الشامل -->
-<div class="total-section">
-    <button id="btnGrandTotal" class="btn-total" onclick="calcGrandTotal()" disabled>
-        📊 احسب المقارنة الشاملة (القديم vs الجديد)
-    </button>
-    <div id="grandTotalResult" class="total-result">
-        <h3>📑 التقرير الشامل للفاتورة</h3>
-        <div class="row"><span>إجمالي الفاتورة القديمة:</span> <span id="old_grand" style="font-weight:bold;">0.00 ريال</span></div>
-        <div class="row"><span>إجمالي الفاتورة الجديدة:</span> <span id="new_grand" style="font-weight:bold; color:#0f766e;">0.00 ريال</span></div>
-        <div class="row highlight"><span>الفرق:</span> <span id="diff_grand">0.00 ريال</span></div>
-        <div class="row" style="margin-top:5px;"><span>نسبة التغير:</span> <span id="pct_grand" style="font-weight:bold;">0%</span></div>
-    </div>
+<!-- شريط التاريخ والوقت -->
+<div class="datetime-bar">
+    <span id="todayDate"></span>
+    <span id="currentTime"></span>
 </div>
 
-<div class="tabs">
-    <button class="tab-btn active" onclick="openTab('elec')" id="btn-elec">⚡️ الكهرباء</button>
-    <button class="tab-btn" onclick="openTab('water')" id="btn-water">💧 الماء</button>
-</div>
+<!-- اسمك -->
+<div class="owner-name">👤 إعداد: سليمان صالح الصهيل</div>
 
-<!-- 1. تبويب الكهرباء -->
-<div id="elec" class="tab-content active">
-    <label>نوع القطاع (التعريفة)</label>
-    <select id="e_sector" onchange="updateElecBreaker(); resetOnChange('e')">
-      <option value="residential">سكني</option>
-      <option value="commercial">تجاري / تعليمي / صحي أهلي</option>
-    </select>
-    
-    <label>الاستهلاك الشهري (ك.و.س)</label>
-    <input type="number" id="e_usage" placeholder="مثال: 3500" oninput="clearError('e_usage', 'e_error'); resetOnChange('e')">
-    <div id="e_error" class="error-msg">الرجاء إدخال استهلاك الكهرباء أولاً!</div>
-    
-    <label>سعة القاطع</label>
-    <select id="e_breaker" onchange="resetOnChange('e')"></select>
-    
-    <button class="btn-calc" onclick="calcElec()">احسب الكهرباء</button>
-    <div id="e_result" class="result"></div>
-    
-    <!-- تقرير المقارنة للكهرباء -->
-    <div id="e_compare" class="report-box"></div>
-</div>
+<label>الاستهلاك الشهري (ك.و.س)</label>
+<input type="number" id="usage" placeholder="مثال: 500" oninput="clearError()">
+<div id="error" class="error-msg">الرجاء إدخال استهلاك صحيح!</div>
 
-<!-- 2. تبويب الماء -->
-<div id="water" class="tab-content">
-    <label>نوع القطاع (تعريفة الماء)</label>
-    <select id="w_sector" onchange="updateWaterMeter(); resetOnChange('w')">
-      <option value="residential">سكني (شرائح)</option>
-      <option value="commercial">تجاري / صناعي (سعر موحد)</option>
-    </select>
-    
-    <label>استهلاك الماء (متر مكعب) - اختياري</label>
-    <input type="number" id="w_usage" placeholder="إذا تركته فارغاً يُحسب صفر" oninput="resetOnChange('w')">
-    
-    <label>قطر عداد الماء</label>
-    <select id="w_meter" onchange="resetOnChange('w')"></select>
-    
-    <button class="btn-calc" onclick="calcWater()">احسب الماء</button>
-    <div id="w_result" class="result"></div>
+<label>سعة القاطع</label>
+<select id="breaker">
+  <option value="70">20-99 أمبير (70 ريال)</option>
+  <option value="80">100-199 أمبير (80 ريال)</option>
+  <option value="90">200-299 أمبير (90 ريال)</option>
+  <option value="100">300+ أمبير (100 ريال)</option>
+</select>
 
-    <!-- تقرير المقارنة للماء -->
-    <div id="w_compare" class="report-box"></div>
-</div>
+<button class="btn-calc" onclick="calculate()">احسب</button>
+<div id="result" class="result"></div>
 
 </div>
 
 <script>
-let totals = { 
-    elec: { old: 0, new: 0 }, 
-    water: { old: 0, new: 0 } 
-};
-let calculated = { elec: false, water: false };
+// دالة تحديث الوقت والتاريخ
+function updateDateTime() {
+    const now = new Date();
+    
+    // التاريخ (اليوم، السنة، الشهر، اليوم)
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById("todayDate").textContent = now.toLocaleDateString('ar-SA', options);
+    
+    // الوقت (الساعة:الدقيقة:الثانية ص/م)
+    const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+    document.getElementById("currentTime").textContent = now.toLocaleTimeString('ar-SA', timeOptions);
+}
 
-function scrollToElement(element) {
-    if (!element) return;
+// تشغيل التحديث عند فتح الصفحة
+updateDateTime();
+// تحديث الوقت كل ثانية
+setInterval(updateDateTime, 1000);
+
+
+function clearError() {
+    document.getElementById("usage").classList.remove("input-error");
+    document.getElementById("error").style.display = "none";
+}
+
+function calculate() {
+    let usage = Number(document.getElementById("usage").value);
+    let fixed = Number(document.getElementById("breaker").value);
+    
+    if (!usage || usage <= 0) {
+        document.getElementById("usage").classList.add("input-error");
+        document.getElementById("error").style.display = "block";
+        return;
+    }
+
+    // 1. حساب الشرائح (سكني)
+    let tier1 = Math.min(usage, 6000); 
+    let tier2 = Math.max(usage - 6000, 0); 
+
+    let costT1 = tier1 * 0.21;
+    let costT2 = tier2 * 0.33;
+    let totalEnergy = costT1 + costT2;
+
+    // 2. الحساب النهائي
+    let subtotal = totalEnergy + fixed;
+    let vat = subtotal * 0.15;
+    let total = subtotal + vat;
+
+    let resultDiv = document.getElementById("result");
+    resultDiv.innerHTML = `
+    <b>تفاصيل الحساب:</b><br>
+    - الشريحة الأولى (حتى 6000): ${tier1} × 21 هللة = ${costT1.toFixed(2)} ريال<br>
+    ${tier2 > 0 ? `- الشريحة الثانية (فوق 6000): ${tier2} × 33 هللة = ${costT2.toFixed(2)} ريال<br>` : ''}
+    - الرسوم الثابتة: ${fixed.toFixed(2)} ريال<br>
+    - الضريبة (15%): ${vat.toFixed(2)} ريال<br>
+    <hr style="border:0; border-top:1px solid #ddd; margin:10px 0;">
+    <b style="font-size:20px;">الإجمالي النهائي: ${total.toFixed(2)} ريال</b>
+    `;
+    resultDiv.style.display = "block";
+
     setTimeout(() => {
-        const yOffset = -50;
-        const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-        window.scrollTo({top: y, behavior: 'smooth'});
-    }, 150);
-}
-
-function clearError(inputId, errorId) {
-    document.getElementById(inputId).classList.remove("input-error");
-    document.getElementById(errorId).style.display = "none";
-}
-
-function showError(inputId, errorId) {
-    let input = document.getElementById(inputId);
-    input.classList.add("input-error");
-    document.getElementById(errorId).style.display = "block";
-    input.focus();
-}
-
-function updateElecBreaker() {
-    let sector = document.getElementById("e_sector").value;
-    let bSelect = document.getElementById("e_breaker");
-    if (sector === "residential") bSelect.innerHTML = `<option value="70">20-99 أمبير (70 ريال)</option><option value="80">100-199 أمبير (80 ريال)</option><option value="90">200-299 أمبير (90 ريال)</option><option value="100">300+ أمبير (100 ريال)</option>`;
-    else if (sector === "commercial") bSelect.innerHTML = `<option value="350">20-99 أمبير (350 ريال)</option><option value="500">100-199 أمبير (500 ريال)</option><option value="700">200-299 أمبير (700 ريال)</option><option value="900">300+ أمبير (900 ريال)</option>`;
-}
-
-function updateWaterMeter() {
-    let sector = document.getElementById("w_sector").value;
-    let mSelect = document.getElementById("w_meter");
-    if (sector === "residential") mSelect.innerHTML = `<option value="30">20 ملم أو أقل (30 ريال)</option><option value="60">21-40 ملم (60 ريال)</option><option value="90">41-65 ملم (90 ريال)</option><option value="120">66-100 ملم (120 ريال)</option>`;
-    else if (sector === "commercial") mSelect.innerHTML = `<option value="60">20-40 ملم (60 ريال)</option><option value="90">41-65 ملم (90 ريال)</option><option value="120">66-100 ملم (120 ريال)</option><option value="225">100+ ملم (225 ريال)</option>`;
-}
-
-window.onload = function() { updateElecBreaker(); updateWaterMeter(); };
-
-function openTab(tabName) {
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-    document.getElementById(tabName).classList.add('active');
-    document.getElementById('btn-' + tabName).classList.add('active');
-}
-
-function resetOnChange(type) {
-    if (type === 'e') {
-        calculated.elec = false;
-        totals.elec = { old: 0, new: 0 };
-        document.getElementById("e_result").style.display = "none";
-        document.getElementById("e_compare").style.display = "none";
-    } else if (type === 'w') {
-        calculated.water = false;
-        totals.water = { old: 0, new: 0 };
-        document.getElementById("w_result").style.display = "none";
-        document.getElementById("w_compare").style.display = "none";
-    }
-    document.getElementById("grandTotalResult").style.display = "none";
-    let btn = document.getElementById("btnGrandTotal");
-    btn.disabled = true;
-    btn.classList.remove("active");
-    checkTotals();
-}
-
-function checkTotals() {
-    let btn = document.getElementById("btnGrandTotal");
-    if (calculated.elec && calculated.water) {
-        btn.disabled = false;
-        btn.classList.add("active");
-    } else {
-        btn.disabled = true;
-        btn.classList.remove("active");
-    }
-}
-
-function calcElec() {
-    let usage = Number(document.getElementById("e_usage").value);
-    let fixed = Number(document.getElementById("e_breaker").value);
-    if(!usage || usage <= 0){ showError('e_usage', 'e_error'); return; }
-    
-    let sector = document.getElementById("e_sector").value;
-    let energyCost = 0;
-    if (sector === "residential") energyCost = (Math.min(usage, 6000) * 0.21) + (Math.max(usage - 6000, 0) * 0.33);
-    else if (sector === "commercial") energyCost = (Math.min(usage, 6000) * 0.25) + (Math.max(usage - 6000, 0) * 0.35);
-
-    let subtotal = energyCost + fixed;
-    let vat = subtotal * 0.15;
-    totals.elec.new = subtotal + vat;
-    calculated.elec = true;
-
-    let resultDiv = document.getElementById("e_result");
-    resultDiv.innerHTML = `
-    <b>الاستهلاك:</b> ${energyCost.toFixed(2)} ريال<br>
-    <b>الثابتة:</b> ${fixed.toFixed(2)} ريال<br>
-    <b>الضريبة (15%):</b> ${vat.toFixed(2)} ريال<br>
-    <hr><b style="color:#0f766e; font-size:18px;">إجمالي الكهرباء (جديد): ${totals.elec.new.toFixed(2)} ريال</b>`;
-    resultDiv.style.display = "block";
-    
-    let compareDiv = document.getElementById("e_compare");
-    if (sector === "residential") {
-        let oldEnergyCost = (Math.min(usage, 6000) * 0.18) + (Math.max(usage - 6000, 0) * 0.30);
-        let oldSubtotal = oldEnergyCost + 10; 
-        let oldVat = oldSubtotal * 0.15;
-        totals.elec.old = oldSubtotal + oldVat;
-        
-        let diff = Math.abs(totals.elec.new - totals.elec.old);
-        let pct = (diff / totals.elec.old) * 100;
-        let status = totals.elec.new > totals.elec.old ? "زيادة" : "انخفاض";
-        
-        compareDiv.innerHTML = `
-        <b>📝 تقرير المقارنة (كهرباء سكني):</b><br>
-        عند استهلاك <b>${usage}</b> ك.و.س:<br>
-        • الفاتورة القديمة كانت: <b>${totals.elec.old.toFixed(2)} ريال</b><br>
-        • الفاتورة الجديدة صارت: <b>${totals.elec.new.toFixed(2)} ريال</b><br>
-        • الفرق: <b>${diff.toFixed(2)} ريال</b> (${status})<br>
-        • نسبة التغير: <b>${pct.toFixed(1)}%</b>`;
-        compareDiv.style.display = "block";
-    } else {
-        totals.elec.old = totals.elec.new; 
-        compareDiv.style.display = "none";
-    }
-    
-    scrollToElement(resultDiv);
-    checkTotals();
-}
-
-function calcWater() {
-    let usage = Number(document.getElementById("w_usage").value) || 0;
-    let fixed = Number(document.getElementById("w_meter").value);
-    let sector = document.getElementById("w_sector").value;
-
-    let waterCost = 0, sewageCost = 0;
-    let oldWaterCost = 0, oldSewageCost = 0;
-
-    if (sector === "residential") {
-        let t1 = Math.min(usage, 15), t2 = Math.max(Math.min(usage - 15, 15), 0), t3 = Math.max(Math.min(usage - 30, 15), 0), t4 = Math.max(usage - 45, 0);
-        waterCost = (t1 * 1.5) + (t2 * 3) + (t3 * 6) + (t4 * 9);
-        sewageCost = 0; 
-        oldWaterCost = (t1 * 0.15) + (t2 * 1.5) + (t3 * 6) + (t4 * 9);
-        oldSewageCost = 0;
-    } else if (sector === "commercial") { 
-        waterCost = usage * 8; sewageCost = usage * 4; 
-    }
-
-    let subtotal = waterCost + sewageCost + fixed;
-    let vat = subtotal * 0.15;
-    totals.water.new = subtotal + vat;
-    calculated.water = true;
-
-    let resultDiv = document.getElementById("w_result");
-    resultDiv.innerHTML = `
-    <b>الماء:</b> ${waterCost.toFixed(2)} ريال<br>
-    <b>الصرف الصحي:</b> ${sewageCost.toFixed(2)} ريال<br>
-    <b>الثابتة:</b> ${fixed.toFixed(2)} ريال<br>
-    <b>الضريبة (15%):</b> ${vat.toFixed(2)} ريال<br>
-    <hr><b style="color:#0f766e; font-size:18px;">إجمالي الماء (جديد): ${totals.water.new.toFixed(2)} ريال</b>`;
-    resultDiv.style.display = "block";
-    
-    let compareDiv = document.getElementById("w_compare");
-    if (sector === "residential") {
-        let oldSubtotal = oldWaterCost + oldSewageCost + 10; 
-        let oldVat = oldSubtotal * 0.15;
-        totals.water.old = oldSubtotal + oldVat;
-        
-        let diff = Math.abs(totals.water.new - totals.water.old);
-        let pct = (diff / totals.water.old) * 100;
-        let status = totals.water.new > totals.water.old ? "زيادة" : "انخفاض";
-
-        compareDiv.innerHTML = `
-        <b>📝 تقرير المقارنة (ماء سكني):</b><br>
-        عند استهلاك <b>${usage}</b> متر مكعب:<br>
-        • الفاتورة القديمة كانت: <b>${totals.water.old.toFixed(2)} ريال</b><br>
-        • الفاتورة الجديدة صارت: <b>${totals.water.new.toFixed(2)} ريال</b><br>
-        • الفرق: <b>${diff.toFixed(2)} ريال</b> (${status})<br>
-        • نسبة التغير: <b>${pct.toFixed(1)}%</b>`;
-        compareDiv.style.display = "block";
-    } else {
-        totals.water.old = totals.water.new;
-        compareDiv.style.display = "none";
-    }
-
-    scrollToElement(resultDiv);
-    checkTotals();
-}
-
-function calcGrandTotal() {
-    let oldGrand = totals.elec.old + totals.water.old;
-    let newGrand = totals.elec.new + totals.water.new;
-    
-    let diff = Math.abs(newGrand - oldGrand);
-    let pct = oldGrand > 0 ? (diff / oldGrand) * 100 : 0;
-    let status = newGrand > oldGrand ? "زيادة" : "انخفاض";
-
-    document.getElementById("old_grand").textContent = oldGrand.toFixed(2) + " ريال";
-    document.getElementById("new_grand").textContent = newGrand.toFixed(2) + " ريال";
-    document.getElementById("diff_grand").textContent = diff.toFixed(2) + " ريال (" + status + ")";
-    document.getElementById("pct_grand").textContent = pct.toFixed(1) + "%";
-
-    let resultDiv = document.getElementById("grandTotalResult");
-    resultDiv.style.display = "block";
-    scrollToElement(resultDiv);
+        resultDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
 }
 </script>
 
