@@ -12,7 +12,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
-/* الألوان الافتراضية (الوضع النهاري) */
 :root {
     --bg-body: #f4f7fb;
     --bg-card: #ffffff;
@@ -26,7 +25,6 @@
     --border-result: #e2e8f0;
 }
 
-/* ألوان الوضع الليلي */
 [data-theme="dark"] {
     --bg-body: #121212;
     --bg-card: #1e1e1e;
@@ -45,7 +43,7 @@ body { font-family: Tahoma, Arial; background: var(--bg-body); padding: 15px; ma
 h2 { text-align: center; color: #0f766e; margin-bottom: 10px; }
 [data-theme="dark"] h2 { color: #38ef7d; }
 
-/* زر الوضع الليلي */
+/* زر الوضع الليلي (يبدأ بالشمس) */
 .theme-toggle {
     position: absolute; top: 15px; left: 15px;
     background: var(--bg-tab); border: 1px solid var(--border-color);
@@ -100,7 +98,7 @@ input.input-error { border: 2px solid #ef4444 !important; background-color: #ffe
 <body>
 
 <div class="card">
-    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀️</button>
     
     <h2>⚡️💧 حاسبة الكهرباء والماء</h2>
 
@@ -167,17 +165,17 @@ input.input-error { border: 2px solid #ef4444 !important; background-color: #ffe
 </div>
 
 <script>
-// ------ كود الوضع الليلي ------
+// ------ كود الوضع الليلي (معكوس زي ما طلبت) ------
 function toggleTheme() {
     let body = document.body;
     let btn = document.getElementById("themeToggle");
     if (body.getAttribute("data-theme") === "dark") {
         body.removeAttribute("data-theme");
-        btn.textContent = "🌙";
+        btn.textContent = "☀️"; // شمس في الوضع النهاري
         localStorage.setItem("theme", "light");
     } else {
         body.setAttribute("data-theme", "dark");
-        btn.textContent = "☀️";
+        btn.textContent = "🌙"; // قمر في الوضع الليلي
         localStorage.setItem("theme", "dark");
     }
 }
@@ -187,6 +185,8 @@ window.onload = function() {
     let savedTheme = localStorage.getItem("theme");
     if (savedTheme === "dark") {
         document.body.setAttribute("data-theme", "dark");
+        document.getElementById("themeToggle").textContent = "🌙";
+    } else {
         document.getElementById("themeToggle").textContent = "☀️";
     }
 };
