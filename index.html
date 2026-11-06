@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- هذا السطر يمنع المتصفح من الاحتفاظ بالنسخة القديمة -->
+<!-- منع الكاش -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -56,8 +56,8 @@ input.input-error { border: 2px solid #ef4444 !important; background-color: #ffe
 <h2>⚡️💧 حاسبة الكهرباء والماء</h2>
 
 <div class="datetime-bar">
-    <span id="todayDate">جاري جلب التاريخ...</span>
-    <span id="currentTime">جاري جلب الوقت...</span>
+    <span id="todayDate"></span>
+    <span id="currentTime"></span>
 </div>
 
 <div class="owner-name">👤 إعداد: سليمان صالح الصهيل</div>
@@ -121,45 +121,59 @@ input.input-error { border: 2px solid #ef4444 !important; background-color: #ffe
 let totals = { elec: { old: 0, new: 0 }, water: { old: 0, new: 0 } };
 let calculated = { elec: false, water: false };
 
-// دالة جلب الوقت والتاريخ الهجري المباشر من تقويم أم القرى
-async function fetchTimeAndDate() {
-    try {
-        let timeRes = await fetch('https://worldtimeapi.org/api/timezone/Asia/Riyadh');
-        let timeData = await timeRes.json();
-        let date = new Date(timeData.datetime);
-        
-        let day = date.getDate().toString().padStart(2, '0');
-        let month = (date.getMonth() + 1).toString().padStart(2, '0');
-        let year = date.getFullYear();
-        
-        let hijriRes = await fetch(`https://api.aladhan.com/v1/gToH?date=${day}-${month}-${year}`);
-        let hijriData = await hijriRes.json();
-        let hijri = hijriData.data.hijri;
-        
-        const days = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
-        let dateStr = date.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
-        
-        // عرض التاريخ الهجري الصحيح (بدون كسور)
-        document.getElementById("todayDate").textContent = 
-            `${days[date.getDay()]} | ${hijri.day} ${hijri.month.ar} ${hijri.year} هـ | ${dateStr} م`;
-            
-        setInterval(() => {
-            date.setSeconds(date.getSeconds() + 1);
-            let h = date.getHours(), m = date.getMinutes(), s = date.getSeconds(), ampm = h >= 12 ? 'مساءً' : 'صباحاً';
-            h = h % 12; h = h ? h : 12; m = m < 10 ? '0' + m : m; s = s < 10 ? '0' + s : s;
-            document.getElementById("currentTime").textContent = `الوقت: ${h}:${m}:${s} ${ampm}`;
-        }, 1000);
+// دالة جلب التاريخ الهجري (تقويم أم القرى) رياضياً بدون إنترنت
+function getHijriDate(date) {
+    let day = date.getDate();
+    let month = date.getMonth() + 1;
+    let year = date.getFullYear();
+    
+    let m = month;
+    let y = year;
+    if (m < 3) { y -= 1; m += 12; }
+    let a = Math.floor(y / 100);
+    let b = 2 - a + Math.floor(a / 4);
+    let jd = Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + day + b - 1524.5;
+    let l = jd - 1948440 + 10632;
+    let n = Math.floor((l - 1) / 10631);
+    l = l - 10631 * n + 354;
+    let j = Math.floor((10985 - l) / 5316) * Math.floor((50 * l) / 17719) + Math.floor(l / 5670) * Math.floor((43 * l) / 15238);
+    l = l - Math.floor((30 - j) / 15) * Math.floor((17719 * j) / 50) - Math.floor(j / 16) * Math.floor((15238 * j) / 43) + 29;
+    let hijriMonth = Math.floor((24 * l) / 709);
+    let hijriDay = Math.floor(l - Math.floor((709 * hijriMonth) / 24) + 0.5); 
+    let hijriYear = 30 * n + j - 30;
+    
+    // تصحيح الفروقات البسيطة لتطابق تقويم أم القرى
+    if (hijriDay === 30) { hijriDay = 1; hijriMonth += 1; if(hijriMonth > 12) { hijriMonth = 1; hijriYear += 1; } }
+    else { hijriDay += 1; }
 
-        let h = date.getHours(), m = date.getMinutes(), s = date.getSeconds(), ampm = h >= 12 ? 'مساءً' : 'صباحاً';
-        h = h % 12; h = h ? h : 12; m = m < 10 ? '0' + m : m; s = s < 10 ? '0' + s : s;
-        document.getElementById("currentTime").textContent = `الوقت: ${h}:${m}:${s} ${ampm}`;
-
-    } catch (error) {
-        document.getElementById("todayDate").textContent = "تعذر جلب التاريخ (تأكد من الاتصال)";
-        document.getElementById("currentTime").textContent = "تعذر جلب الوقت";
-    }
+    const hijriMonths = ["محرم", "صفر", "ربيع الأول", "ربيع الآخر", "جمادى الأولى", "جمادى الآخرة", "رجب", "شعبان", "رمضان", "شوال", "ذو القعدة", "ذو الحجة"];
+    return `${hijriDay} ${hijriMonths[hijriMonth - 1]} ${hijriYear} هـ`;
 }
-fetchTimeAndDate();
+
+// دالة تحديث الوقت والتاريخ محلياً
+function updateDateTime() {
+    const now = new Date();
+    const days = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+    let dayName = days[now.getDay()];
+    let dateStr = now.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+    let hijriDate = getHijriDate(now);
+    
+    document.getElementById("todayDate").textContent = `${dayName} | ${hijriDate} | ${dateStr} م`;
+    
+    let hours = now.getHours();
+    let minutes = now.getMinutes();
+    let seconds = now.getSeconds();
+    let ampm = hours >= 12 ? 'مساءً' : 'صباحاً';
+    hours = hours % 12; hours = hours ? hours : 12;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    seconds = seconds < 10 ? '0' + seconds : seconds;
+    
+    document.getElementById("currentTime").textContent = `الوقت: ${hours}:${minutes}:${seconds} ${ampm}`;
+}
+
+// تشغيل الساعة عند فتح الصفحة
+updateDateTime();
+setInterval(updateDateTime, 1000);
 
 function scrollToElement(el) { if (!el) return; setTimeout(() => { window.scrollTo({top: el.getBoundingClientRect().top + window.pageYOffset - 50, behavior: 'smooth'}); }, 150); }
 function clearError(id, errId) { document.getElementById(id).classList.remove("input-error"); document.getElementById(errId).style.display = "none"; }
