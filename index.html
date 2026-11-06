@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- هذا السطر يمنع المتصفح من الاحتفاظ بالنسخة القديمة -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
 <title>حاسبة الكهرباء والماء</title>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -116,30 +121,28 @@ input.input-error { border: 2px solid #ef4444 !important; background-color: #ffe
 let totals = { elec: { old: 0, new: 0 }, water: { old: 0, new: 0 } };
 let calculated = { elec: false, water: false };
 
-// دالة جلب الوقت والتاريخ الرسمي من الإنترنت
+// دالة جلب الوقت والتاريخ الهجري المباشر من تقويم أم القرى
 async function fetchTimeAndDate() {
     try {
-        // جلب الوقت
         let timeRes = await fetch('https://worldtimeapi.org/api/timezone/Asia/Riyadh');
         let timeData = await timeRes.json();
         let date = new Date(timeData.datetime);
         
-        // جلب التاريخ الهجري الرسمي من تقويم أم القرى
         let day = date.getDate().toString().padStart(2, '0');
         let month = (date.getMonth() + 1).toString().padStart(2, '0');
         let year = date.getFullYear();
+        
         let hijriRes = await fetch(`https://api.aladhan.com/v1/gToH?date=${day}-${month}-${year}`);
         let hijriData = await hijriRes.json();
         let hijri = hijriData.data.hijri;
         
-        // عرض التاريخ
         const days = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
         let dateStr = date.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
         
+        // عرض التاريخ الهجري الصحيح (بدون كسور)
         document.getElementById("todayDate").textContent = 
             `${days[date.getDay()]} | ${hijri.day} ${hijri.month.ar} ${hijri.year} هـ | ${dateStr} م`;
             
-        // تحديث الوقت كل ثانية
         setInterval(() => {
             date.setSeconds(date.getSeconds() + 1);
             let h = date.getHours(), m = date.getMinutes(), s = date.getSeconds(), ampm = h >= 12 ? 'مساءً' : 'صباحاً';
@@ -147,13 +150,11 @@ async function fetchTimeAndDate() {
             document.getElementById("currentTime").textContent = `الوقت: ${h}:${m}:${s} ${ampm}`;
         }, 1000);
 
-        // عرض الوقت لأول مرة
         let h = date.getHours(), m = date.getMinutes(), s = date.getSeconds(), ampm = h >= 12 ? 'مساءً' : 'صباحاً';
         h = h % 12; h = h ? h : 12; m = m < 10 ? '0' + m : m; s = s < 10 ? '0' + s : s;
         document.getElementById("currentTime").textContent = `الوقت: ${h}:${m}:${s} ${ampm}`;
 
     } catch (error) {
-        // في حال انقطاع الإنترنت
         document.getElementById("todayDate").textContent = "تعذر جلب التاريخ (تأكد من الاتصال)";
         document.getElementById("currentTime").textContent = "تعذر جلب الوقت";
     }
