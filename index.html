@@ -14,16 +14,17 @@ h2 { text-align: center; color: #0f766e; margin-bottom: 10px; }
     text-align: center;
     background: #f8fafc;
     border: 1px solid #cbd5e1;
-    padding: 8px;
+    padding: 10px;
     border-radius: 8px;
     font-size: 14px;
     color: #475569;
     margin-bottom: 10px;
     font-weight: bold;
     display: flex;
-    justify-content: space-around;
-    align-items: center;
+    flex-direction: column;
+    gap: 5px;
 }
+.datetime-bar span { display: block; }
 
 /* تنسيق اسمك */
 .owner-name { text-align: center; color: #0f766e; font-weight: bold; margin-bottom: 20px; background: #e0f2fe; padding: 8px; border-radius: 8px; border: 1px dashed #0f766e; }
@@ -70,17 +71,40 @@ input.input-error { border: 2px solid #ef4444 !important; background-color: #ffe
 </div>
 
 <script>
-// دالة تحديث الوقت والتاريخ
+// دالة تحديث الوقت والتاريخ (طريقة يدوية مضمونة للجميع)
 function updateDateTime() {
     const now = new Date();
     
-    // التاريخ (اليوم، السنة، الشهر، اليوم)
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    document.getElementById("todayDate").textContent = now.toLocaleDateString('ar-SA', options);
+    // أيام الأسبوع بالعربي
+    const days = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+    let dayName = days[now.getDay()];
+    
+    // التاريخ الميلادي (يوم/شهر/سنة)
+    let dateStr = now.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+    
+    // التاريخ الهجري
+    let hijriDate = "";
+    try {
+        hijriDate = now.toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' });
+    } catch(e) {
+        hijriDate = "التقويم الهجري";
+    }
+
+    // عرض اليوم والتاريخ
+    document.getElementById("todayDate").textContent = `${dayName} | ${hijriDate} هـ | ${dateStr} م`;
     
     // الوقت (الساعة:الدقيقة:الثانية ص/م)
-    const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
-    document.getElementById("currentTime").textContent = now.toLocaleTimeString('ar-SA', timeOptions);
+    let hours = now.getHours();
+    let minutes = now.getMinutes();
+    let seconds = now.getSeconds();
+    let ampm = hours >= 12 ? 'مساءً' : 'صباحاً';
+    
+    hours = hours % 12;
+    hours = hours ? hours : 12; // الساعة 0 تصير 12
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    seconds = seconds < 10 ? '0' + seconds : seconds;
+    
+    document.getElementById("currentTime").textContent = `الوقت: ${hours}:${minutes}:${seconds} ${ampm}`;
 }
 
 // تشغيل التحديث عند فتح الصفحة
