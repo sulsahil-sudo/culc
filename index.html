@@ -12,12 +12,9 @@ body { font-family: Tahoma, Arial; background: #f4f7fb; padding: 15px; margin: 0
 .card { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 3px 15px rgba(0,0,0,.1); }
 h2 { text-align: center; color: #0f766e; margin-bottom: 10px; }
 
-/* شريط التاريخ والوقت */
 .datetime-bar { text-align: center; background: #f8fafc; border: 1px solid #cbd5e1; padding: 10px; border-radius: 8px; font-size: 14px; color: #475569; margin-bottom: 10px; font-weight: bold; display: flex; flex-direction: column; gap: 5px; }
-/* اسمك */
 .owner-name { text-align: center; color: #0f766e; font-weight: bold; margin-bottom: 20px; background: #e0f2fe; padding: 8px; border-radius: 8px; border: 1px dashed #0f766e; }
 
-/* زر الإجمالي الشامل */
 .total-section { margin-bottom: 20px; }
 .btn-total { width: 100%; padding: 15px; font-size: 18px; font-weight: bold; border: none; border-radius: 8px; background: #94a3b8; color: white; cursor: not-allowed; opacity: 0.6; transition: 0.3s; }
 .btn-total.active { background: #2563eb; cursor: pointer; opacity: 1; box-shadow: 0 4px 10px rgba(37,99,235,0.3); }
@@ -27,7 +24,6 @@ h2 { text-align: center; color: #0f766e; margin-bottom: 10px; }
 .total-result .row { display: flex; justify-content: space-between; margin-bottom: 5px; }
 .total-result .highlight { font-weight: bold; font-size: 18px; color: #15803d; margin-top: 10px; border-top: 1px dashed #86efac; padding-top: 10px; }
 
-/* التبويبات */
 .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
 .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; background: #e2e8f0; color: #333; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
 .tab-btn.active { background: #0f766e; color: white; }
@@ -45,7 +41,6 @@ input.input-error { border: 2px solid #ef4444 !important; background-color: #ffe
 .btn-calc:hover { background: #115e59; }
 .result { margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 10px; display: none; line-height: 1.8; border: 1px solid #e2e8f0; }
 
-/* تقرير المقارنة */
 .report-box { margin-top: 15px; padding: 15px; background: #fff7ed; border: 1px solid #fdba74; border-radius: 8px; display: none; font-size: 15px; line-height: 1.7; color: #333; }
 .report-box b { color: #c2410c; }
 </style>
@@ -80,7 +75,6 @@ input.input-error { border: 2px solid #ef4444 !important; background-color: #ffe
     <button class="tab-btn" onclick="openTab('water')" id="btn-water">💧 الماء</button>
 </div>
 
-<!-- 1. تبويب الكهرباء -->
 <div id="elec" class="tab-content active">
     <label>الاستهلاك الشهري (ك.و.س)</label>
     <input type="number" id="e_usage" placeholder="مثال: 500" oninput="clearError('e_usage', 'e_error'); resetOnChange('e')">
@@ -99,7 +93,6 @@ input.input-error { border: 2px solid #ef4444 !important; background-color: #ffe
     <div id="e_compare" class="report-box"></div>
 </div>
 
-<!-- 2. تبويب الماء -->
 <div id="water" class="tab-content">
     <label>استهلاك الماء (متر مكعب) - اختياري</label>
     <input type="number" id="w_usage" placeholder="إذا تركته فارغاً يُحسب صفر" oninput="resetOnChange('w')">
@@ -123,43 +116,49 @@ input.input-error { border: 2px solid #ef4444 !important; background-color: #ffe
 let totals = { elec: { old: 0, new: 0 }, water: { old: 0, new: 0 } };
 let calculated = { elec: false, water: false };
 
-// جلب التاريخ والوقت من الإنترنت (مضمون)
-async function fetchTime() {
+// دالة جلب الوقت والتاريخ الرسمي من الإنترنت
+async function fetchTimeAndDate() {
     try {
-        let response = await fetch('https://worldtimeapi.org/api/timezone/Asia/Riyadh');
-        let data = await response.json();
-        let date = new Date(data.datetime);
-        updateUI(date);
-        setInterval(() => { date.setSeconds(date.getSeconds() + 1); updateUI(date); }, 1000);
+        // جلب الوقت
+        let timeRes = await fetch('https://worldtimeapi.org/api/timezone/Asia/Riyadh');
+        let timeData = await timeRes.json();
+        let date = new Date(timeData.datetime);
+        
+        // جلب التاريخ الهجري الرسمي من تقويم أم القرى
+        let day = date.getDate().toString().padStart(2, '0');
+        let month = (date.getMonth() + 1).toString().padStart(2, '0');
+        let year = date.getFullYear();
+        let hijriRes = await fetch(`https://api.aladhan.com/v1/gToH?date=${day}-${month}-${year}`);
+        let hijriData = await hijriRes.json();
+        let hijri = hijriData.data.hijri;
+        
+        // عرض التاريخ
+        const days = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+        let dateStr = date.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+        
+        document.getElementById("todayDate").textContent = 
+            `${days[date.getDay()]} | ${hijri.day} ${hijri.month.ar} ${hijri.year} هـ | ${dateStr} م`;
+            
+        // تحديث الوقت كل ثانية
+        setInterval(() => {
+            date.setSeconds(date.getSeconds() + 1);
+            let h = date.getHours(), m = date.getMinutes(), s = date.getSeconds(), ampm = h >= 12 ? 'مساءً' : 'صباحاً';
+            h = h % 12; h = h ? h : 12; m = m < 10 ? '0' + m : m; s = s < 10 ? '0' + s : s;
+            document.getElementById("currentTime").textContent = `الوقت: ${h}:${m}:${s} ${ampm}`;
+        }, 1000);
+
+        // عرض الوقت لأول مرة
+        let h = date.getHours(), m = date.getMinutes(), s = date.getSeconds(), ampm = h >= 12 ? 'مساءً' : 'صباحاً';
+        h = h % 12; h = h ? h : 12; m = m < 10 ? '0' + m : m; s = s < 10 ? '0' + s : s;
+        document.getElementById("currentTime").textContent = `الوقت: ${h}:${m}:${s} ${ampm}`;
+
     } catch (error) {
-        updateUI(new Date());
-        setInterval(() => updateUI(new Date()), 1000);
+        // في حال انقطاع الإنترنت
+        document.getElementById("todayDate").textContent = "تعذر جلب التاريخ (تأكد من الاتصال)";
+        document.getElementById("currentTime").textContent = "تعذر جلب الوقت";
     }
 }
-
-function getHijriDate(date) {
-    let day = date.getDate(), month = date.getMonth(), year = date.getFullYear(), m = month + 1, y = year;
-    if (m < 3) { y -= 1; m += 12; }
-    let a = Math.floor(y / 100), b = 2 - a + Math.floor(a / 4);
-    let jd = Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + day + b - 1524.5;
-    let l = jd - 1948440 + 10632, n = Math.floor((l - 1) / 10631);
-    l = l - 10631 * n + 354;
-    let j = Math.floor((10985 - l) / 5316) * Math.floor((50 * l) / 17719) + Math.floor(l / 5670) * Math.floor((43 * l) / 15238);
-    l = l - Math.floor((30 - j) / 15) * Math.floor((17719 * j) / 50) - Math.floor(j / 16) * Math.floor((15238 * j) / 43) + 29;
-    let hijriMonth = Math.floor((24 * l) / 709), hijriDay = l - Math.floor((709 * hijriMonth) / 24), hijriYear = 30 * n + j - 30;
-    const hijriMonths = ["محرم", "صفر", "ربيع الأول", "ربيع الآخر", "جمادى الأولى", "جمادى الآخرة", "رجب", "شعبان", "رمضان", "شوال", "ذو القعدة", "ذو الحجة"];
-    return `${hijriDay} ${hijriMonths[hijriMonth - 1]} ${hijriYear} هـ`;
-}
-
-function updateUI(now) {
-    const days = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
-    let dateStr = now.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
-    document.getElementById("todayDate").textContent = `${days[now.getDay()]} | ${getHijriDate(now)} | ${dateStr} م`;
-    let h = now.getHours(), m = now.getMinutes(), s = now.getSeconds(), ampm = h >= 12 ? 'مساءً' : 'صباحاً';
-    h = h % 12; h = h ? h : 12; m = m < 10 ? '0' + m : m; s = s < 10 ? '0' + s : s;
-    document.getElementById("currentTime").textContent = `الوقت: ${h}:${m}:${s} ${ampm}`;
-}
-fetchTime();
+fetchTimeAndDate();
 
 function scrollToElement(el) { if (!el) return; setTimeout(() => { window.scrollTo({top: el.getBoundingClientRect().top + window.pageYOffset - 50, behavior: 'smooth'}); }, 150); }
 function clearError(id, errId) { document.getElementById(id).classList.remove("input-error"); document.getElementById(errId).style.display = "none"; }
